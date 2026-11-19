@@ -53,7 +53,9 @@ button { cursor: pointer; }
 header.top { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
 .top-in { max-width: 760px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 8px; margin-right: auto; }
-.brand h1 { font-size: 1.35rem; }
+.brand h1 { font-size: 1.35rem; line-height: 1.1; }
+.brand-txt { display: grid; min-width: 0; }
+.club-line { font-size: .85rem; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tabs { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .tabs button { border: 0; background: transparent; padding: 6px 16px; border-radius: 999px; font-weight: 600; color: var(--muted); }
 .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
@@ -190,8 +192,8 @@ window.FIREBASE_CONFIG = {
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="#f97316" stroke="#1b2330" stroke-width="2"/><path d="M4 9 Q13 14 22 9 M4 17 Q13 12 22 17 M13 2 V24" stroke="#1b2330" stroke-width="1.6" fill="none"/></svg>
-      <h1>Combinaisons Handball</h1>
+      <svg width="30" height="30" viewBox="-12 -12 24 24" aria-hidden="true"><defs><clipPath id="hbclip"><circle r="11"/></clipPath></defs><circle r="11" fill="#f5d33f"/><g clip-path="url(#hbclip)"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26" fill="#1e3a7b"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14" fill="#1e3a7b"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49" fill="#1e3a7b"/><polygon points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14 3.48,-12.36 -3.83,-12.36" fill="#1e3a7b"/><polygon points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39 -12.88,1.39 -12.88,-6.96" fill="#1e3a7b"/><polygon points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74 13.23,1.74 13.23,-6.96" fill="#1e3a7b"/><g fill="none" stroke="#111" stroke-width="0.55" stroke-linejoin="round"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49"/><polygon points="-2.52,-0.52 2.09,-0.52 3.48,3.74 -0.17,6.35 -3.92,3.66"/><polygon points="-4.87,-4.26 -2.52,-0.52 -3.92,3.66 -7.48,4.18 -9.75,0.70 -8.27,-3.57"/><polygon points="4.35,-4.18 8.01,-3.66 9.40,0.87 7.14,4.26 3.48,3.74 2.09,-0.52"/><polygon points="-4.53,-9.09 -2.52,-7.66 -4.87,-4.26 -8.27,-3.57 -8.44,-6.35"/><polygon points="2.18,-7.66 4.26,-9.14 8.18,-6.61 8.01,-3.66 4.35,-4.18"/><polyline points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14"/><polyline points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39"/><polyline points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74"/><polyline points="-3.31,10.01 -3.13,12.36"/><polyline points="3.39,10.27 3.66,12.36"/><polyline points="7.48,7.40 8.88,6.61"/><polyline points="-7.48,7.14 -8.88,6.53"/><polyline points="-7.48,4.18 -9.40,4.00"/><polyline points="7.14,4.26 9.40,4.00"/></g></g><circle r="11" fill="none" stroke="#111" stroke-width="1.1"/></svg>
+      <div class="brand-txt"><h1>Combinaisons Handball</h1><div id="clubLine" class="club-line" hidden></div></div>
     </div>
     <div class="tabs" role="tablist" aria-label="Interface">
       <button id="tabPlayer" role="tab" aria-selected="true">Joueur</button>
@@ -252,6 +254,13 @@ window.FIREBASE_CONFIG = {
 
   <!-- COACH : liste -->
   <section id="vCoach" class="view" hidden>
+    <div id="clubBox" class="panel">
+      <h3>Club</h3>
+      <div class="field"><label for="clubName">Nom du club</label><input id="clubName" maxlength="60" placeholder="Ex. : ES Perray Handball"></div>
+      <div class="field"><label for="clubCat">Catégorie</label><input id="clubCat" maxlength="40" list="catList" placeholder="Ex. : U18, Loisirs…">
+        <datalist id="catList"><option value="U11"></option><option value="U13"></option><option value="U15"></option><option value="U18"></option><option value="Seniors"></option><option value="Loisirs"></option></datalist></div>
+      <div class="row"><button id="clubSave" class="btn primary" type="button">Enregistrer</button><span id="clubMsg" class="note"></span></div>
+    </div>
     <div class="row spread">
       <h2 style="font-size:1.6rem">Espace coach</h2>
       <button id="newBtn" class="btn primary">＋ Nouvelle combinaison</button>
@@ -574,9 +583,11 @@ if (typeof module !== "undefined") module.exports = HB;
     s += '<text text-anchor="middle" dy="0.35em" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="' + fsz + '" fill="' + txt + '" pointer-events="none">' + esc(p.label) + '</text></g>';
     return s;
   }
+  // Ballon de handball (panneaux), dessiné dans un cercle de rayon 11.
+  var BALL_G = '<defs><clipPath id="hbclip"><circle r="11"/></clipPath></defs><circle r="11" fill="#f5d33f"/><g clip-path="url(#hbclip)"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26" fill="#1e3a7b"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14" fill="#1e3a7b"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49" fill="#1e3a7b"/><polygon points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14 3.48,-12.36 -3.83,-12.36" fill="#1e3a7b"/><polygon points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39 -12.88,1.39 -12.88,-6.96" fill="#1e3a7b"/><polygon points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74 13.23,1.74 13.23,-6.96" fill="#1e3a7b"/><g fill="none" stroke="#111" stroke-width="0.8" stroke-linejoin="round"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49"/><polygon points="-2.52,-0.52 2.09,-0.52 3.48,3.74 -0.17,6.35 -3.92,3.66"/><polygon points="-4.87,-4.26 -2.52,-0.52 -3.92,3.66 -7.48,4.18 -9.75,0.70 -8.27,-3.57"/><polygon points="4.35,-4.18 8.01,-3.66 9.40,0.87 7.14,4.26 3.48,3.74 2.09,-0.52"/><polygon points="-4.53,-9.09 -2.52,-7.66 -4.87,-4.26 -8.27,-3.57 -8.44,-6.35"/><polygon points="2.18,-7.66 4.26,-9.14 8.18,-6.61 8.01,-3.66 4.35,-4.18"/><polyline points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14"/><polyline points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39"/><polyline points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74"/><polyline points="-3.31,10.01 -3.13,12.36"/><polyline points="3.39,10.27 3.66,12.36"/><polyline points="7.48,7.40 8.88,6.61"/><polyline points="-7.48,7.14 -8.88,6.53"/><polyline points="-7.48,4.18 -9.40,4.00"/><polyline points="7.14,4.26 9.40,4.00"/></g></g><circle r="11" fill="none" stroke="#111" stroke-width="2.2"/>';
   function ballSvg(xy, grab) {
     if (!xy) return "";
-    return '<g ' + (grab ? 'data-ball="1" style="cursor:grab"' : 'pointer-events="none"') + ' transform="translate(' + xy[0].toFixed(2) + ' ' + xy[1].toFixed(2) + ')">' + (grab ? '<circle r="9" fill="transparent"/>' : "") + '<circle r="4.2" fill="#f97316" stroke="#1b2330" stroke-width="1.2"/><path d="M-3 -1.5 Q0 0.6 3 -1.5 M-3 1.5 Q0 -0.6 3 1.5" stroke="#1b2330" stroke-width=".7" fill="none"/></g>';
+    return '<g ' + (grab ? 'data-ball="1" style="cursor:grab"' : 'pointer-events="none"') + ' transform="translate(' + xy[0].toFixed(2) + ' ' + xy[1].toFixed(2) + ')">' + (grab ? '<circle r="9" fill="transparent"/>' : "") + '<g transform="scale(0.42)">' + BALL_G + '</g></g>';
   }
   function ghostSvg(xy, team) {
     if (team === "D" && defOp() < 0.05) return "";
@@ -626,6 +637,37 @@ if (typeof module !== "undefined") module.exports = HB;
     return { id: id, name: String(d.name || "Sans nom").slice(0, 60), notes: String(d.notes || "").slice(0, 400),
       defense: d.defense || "0-6", script: String(d.script || "").slice(0, 1500), players: d.players, frames: d.frames, updatedAt: d.updatedAt || 0 };
   }
+  /* ---------- Nom du club et catégorie ---------- */
+  var CLUB_ID = "_club";
+  S.club = { name: "", category: "" };
+  function readClub(docs) {
+    var d = docs.find(function (x) { return x.id === CLUB_ID; });
+    var data = d ? d.data() : null;
+    S.club = { name: String(data && data.name || "").slice(0, 60), category: String(data && data.category || "").slice(0, 40) };
+    renderClub();
+  }
+  function renderClub() {
+    var parts = [S.club.name, S.club.category].filter(Boolean);
+    var line = $("clubLine");
+    line.textContent = parts.join(" · "); line.hidden = !parts.length;
+    document.title = (S.club.name ? S.club.name + " · " : "") + "Combinaisons Handball";
+    if (document.activeElement !== $("clubName")) $("clubName").value = S.club.name;
+    if (document.activeElement !== $("clubCat")) $("clubCat").value = S.club.category;
+  }
+  async function saveClub() {
+    var body = { name: $("clubName").value.trim().slice(0, 60), category: $("clubCat").value.trim().slice(0, 40), updatedAt: Date.now() };
+    if (S.mode === "local") { S.club = body; try { localStorage.setItem("hb-club", JSON.stringify(body)); } catch (e) {} renderClub(); return; }
+    if (S.mode === "fb") { await S.fdb.collection("combos").doc(CLUB_ID).set(body); return; }
+    await S.db.collection("combos").doc(CLUB_ID).set(body);
+  }
+  $("clubSave").onclick = async function () {
+    var m = $("clubMsg"), b = this; b.disabled = true; m.className = "note"; m.textContent = "Enregistrement…";
+    try { await saveClub(); m.textContent = "Enregistré."; setTimeout(function () { if (m.textContent === "Enregistré.") m.textContent = ""; }, 2500); }
+    catch (err) { m.className = "note err"; m.textContent = writeError(err); }
+    finally { b.disabled = false; }
+  };
+  [$("clubName"), $("clubCat")].forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); $("clubSave").click(); } }); });
+
   function sortCombos() { S.combos.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { numeric: true, sensitivity: "base" }); }); }
 
   var LS_KEY = "hb-combos-v1";
@@ -637,6 +679,8 @@ if (typeof module !== "undefined") module.exports = HB;
 
   function startLocal(reason) {
     S.mode = "local"; S.canWrite = true;
+    try { var cl = JSON.parse(localStorage.getItem("hb-club") || "null"); if (cl) S.club = { name: cl.name || "", category: cl.category || "" }; } catch (e) {}
+    renderClub();
     S.combos = localLoad().map(function (c) { return normalize(c.id, c); }).filter(Boolean);
     sortCombos();
     showBanner(reason);
@@ -661,6 +705,7 @@ if (typeof module !== "undefined") module.exports = HB;
       if (!S.ready) showBanner("Les combinaisons ne sont pas encore accessibles. Vérifiez votre connexion ; la liste s'affichera dès qu'elle sera chargée.");
     }, 10000);
     S.fdb.collection("combos").onSnapshot(function (snap) {
+      readClub(snap.docs);
       S.combos = snap.docs.map(function (d) { return normalize(d.id, d.data()); }).filter(Boolean);
       sortCombos(); S.ready = true; clearTimeout(timer); showBanner(""); renderAll();
     }, function (err) {
@@ -720,6 +765,7 @@ if (typeof module !== "undefined") module.exports = HB;
       if (!S.ready) { showBanner("Les combinaisons ne sont pas encore accessibles. Vérifiez votre connexion ; la liste s'affichera dès qu'elle sera chargée."); }
     }, 10000);
     db.collection("combos").onSnapshot(function (snap) {
+      readClub(snap.docs);
       S.combos = snap.docs.map(function (d) { return normalize(d.id, d.data()); }).filter(Boolean);
       sortCombos();
       if (!snap.metadata.fromCache) { S.ready = true; clearTimeout(timer); showBanner(""); }
@@ -774,6 +820,7 @@ if (typeof module !== "undefined") module.exports = HB;
       $("accountBar").hidden = !logged;
       $("newBtn").hidden = !logged;
       $("coachList").hidden = !logged;
+      $("clubBox").hidden = !logged;
       $("accountTxt").textContent = logged ? "Connecté : " + (S.user.email || "") : "";
       if (!logged && current === "vEdit") show("vCoach");
       return;
