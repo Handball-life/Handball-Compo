@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combinaisons Handball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Plan : outil de tableau tactique. Une colonne centrée, le terrain au cœur de chaque écran, les commandes dessous. */
+:root {
+  --bg: #f3f4f1;
+  --panel: #ffffff;
+  --ink: #1b2330;
+  --muted: #5d6675;
+  --line: #d9dde3;
+  --accent: #1d4ed8;
+  --accent-ink: #ffffff;
+  --danger: #b42318;
+  --soft: #e8eefb;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Terrain : couleurs fixes, identiques dans les deux thèmes */
+  --floor: #ecdcbc;
+  --zone: #c9dbef;
+  --court-line: #26344d;
+  --att: #1d4ed8;
+  --def: #c8312b;
+  --gk: #e7a800;
+  --ball: #f97316;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161d; --panel: #1b212b; --ink: #e8ebf0; --muted: #9aa3b2; --line: #2e3643;
+    --accent: #6d9bff; --accent-ink: #0d1422; --danger: #ff7b6e; --soft: #1f2a40; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1b212b; --ink: #e8ebf0; --muted: #9aa3b2; --line: #2e3643;
+  --accent: #6d9bff; --accent-ink: #0d1422; --danger: #ff7b6e; --soft: #1f2a40; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.45 var(--body); -webkit-tap-highlight-color: transparent; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 760px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 8px; margin-right: auto; }
+.brand h1 { font-size: 1.35rem; }
+.tabs { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.tabs button { border: 0; background: transparent; padding: 6px 16px; border-radius: 999px; font-weight: 600; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+
+main { max-width: 760px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+.view { display: grid; gap: 14px; }
+.view[hidden] { display: none; }
+.note { font-size: .9rem; color: var(--muted); }
+.banner { background: var(--soft); border-radius: 10px; padding: 10px 12px; font-size: .9rem; }
+.banner[hidden] { display: none; }
+.err { color: var(--danger); font-weight: 500; }
+
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 9px 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { color: var(--danger); }
+.btn.ghost { background: transparent; border-color: transparent; padding-left: 4px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.spread { justify-content: space-between; }
+
+/* Liste joueurs */
+.search { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.card { text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 14px; padding: 10px; display: grid; gap: 8px; }
+.card:hover { border-color: var(--accent); }
+.card svg { width: 100%; height: auto; border-radius: 8px; display: block; }
+.card h3 { font-size: 1.2rem; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: .78rem; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--ink); font-weight: 500; }
+.card p { margin: 0; font-size: .88rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.empty { border: 1px dashed var(--line); border-radius: 14px; padding: 24px; text-align: center; color: var(--muted); }
+
+/* Liste coach */
+.list { display: grid; gap: 8px; }
+.item { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.item .t { margin-right: auto; min-width: 0; }
+.item .t b { font-family: var(--display); font-size: 1.15rem; display: block; overflow-wrap: anywhere; }
+
+/* Terrain */
+.court { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px; }
+.court svg { width: 100%; height: auto; display: block; touch-action: none; user-select: none; -webkit-user-select: none; max-height: 68vh; }
+.pawn { cursor: grab; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+/* Lecture */
+.caption { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 10px 12px; min-height: 3.2em; }
+.caption b { font-family: var(--display); font-size: 1.1rem; margin-right: 8px; }
+.segs { display: flex; gap: 4px; }
+.segs button { flex: 1; height: 30px; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; font-size: .78rem; font-weight: 600; color: var(--muted); padding: 0; }
+.segs button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.controls { display: grid; grid-template-columns: 1fr 1fr 1.4fr 1fr; gap: 8px; }
+.controls .btn { justify-content: center; }
+.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: .9rem; }
+.seg-speed { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg-speed button { border: 0; background: var(--panel); padding: 5px 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg-speed button.on { background: var(--accent); color: var(--accent-ink); }
+label.chk { display: inline-flex; gap: 6px; align-items: center; }
+
+/* Éditeur */
+.field { display: grid; gap: 4px; }
+.field label { font-size: .82rem; font-weight: 600; color: var(--muted); }
+.field input, .field textarea, .field select { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.field textarea { resize: vertical; min-height: 60px; }
+.frames { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.frames button { flex: 0 0 auto; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 7px 12px; font-weight: 600; }
+.frames button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.frames button.add { border-style: dashed; color: var(--accent); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.panel h3 { font-size: 1.15rem; }
+.sel-box { background: var(--soft); border-radius: 10px; padding: 8px 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.sticky-actions { position: sticky; bottom: 0; background: var(--bg); padding: 10px 0; border-top: 1px solid var(--line); }
+.inline-confirm { display: inline-flex; gap: 6px; align-items: center; font-size: .9rem; }
+.tool { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn.ball { border-color: #f97316; color: #c2410c; }
+.btn.ball.on { background: #f97316; color: #fff; }
+.btn.ball:disabled { border-color: var(--line); color: var(--muted); }
+#fs { position: fixed; inset: 0; z-index: 100; background: #ddcba6; overflow: hidden; touch-action: none; overscroll-behavior: contain; color: #fff; }
+#fs.rot { inset: auto; top: 0; transform: rotate(90deg); transform-origin: top left; }
+#fs.vert .fs-bar { flex-wrap: wrap; justify-content: center; overflow-x: visible; touch-action: manipulation; padding-top: 18px;
+  background: linear-gradient(to top, rgba(15,20,27,.55), rgba(15,20,27,.25) 75%, rgba(15,20,27,0)); }
+#fs.vert .fs-bar .quit { margin-left: 0; }
+#fs.vert .fs-bar .sep { display: none; }
+#fs.vert .fs-bar .lbl2 { flex-basis: 100%; text-align: center; white-space: normal; }
+.fs-court { position: absolute; inset: 0; }
+.fs-court svg { position: absolute; inset: 0; width: 100%; height: 100%; max-height: none; touch-action: none; user-select: none; -webkit-user-select: none; display: block; }
+.fs-bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 6px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); align-items: center; overflow-x: auto; touch-action: pan-x; pointer-events: none;
+  background: linear-gradient(to top, rgba(15,20,27,.45), rgba(15,20,27,0)); scrollbar-width: none; }
+.fs-bar::-webkit-scrollbar { display: none; }
+.fs-bar > * { pointer-events: auto; }
+.fs-bar button { flex: 0 0 auto; border: 1px solid rgba(255,255,255,.35); background: rgba(20,26,36,.55); color: #fff; border-radius: 10px; padding: 7px 11px; font-weight: 600; font-size: .9rem; line-height: 1.2;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.fs-bar button.on { background: rgba(29,78,216,.85); border-color: rgba(29,78,216,.9); }
+.fs-bar button.ball { border-color: rgba(249,115,22,.9); color: #ffd3b0; }
+.fs-bar button.ball.on { background: rgba(249,115,22,.9); color: #fff; }
+.fs-bar button:disabled { opacity: .35; }
+.fs-bar .sep { width: 1px; align-self: stretch; background: rgba(255,255,255,.25); margin: 4px 2px; flex: 0 0 auto; }
+.fs-bar .lbl2 { flex: 0 1 auto; min-width: 0; font-size: .82rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 3px 8px; border-radius: 8px; background: rgba(20,26,36,.45); }
+.fs-bar .quit { margin-left: auto; }
+@media (max-width: 420px) {
+  .controls { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .controls .lbl { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+window.HB_BACKEND = "firebase";
+// Configuration Firebase du club (projet hand-ball-combi).
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCICR3HM2nsWsThNn3iNV3oZrz61T0pJ8s",
+  authDomain: "hand-ball-combi.firebaseapp.com",
+  projectId: "hand-ball-combi",
+  storageBucket: "hand-ball-combi.firebasestorage.app",
+  messagingSenderId: "374077144937",
+  appId: "1:374077144937:web:f61190a2b950e2091787f8"
+};
+
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="mA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1d4ed8"/></marker>
+    <marker id="mD" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#c8312b"/></marker>
+    <marker id="mG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b07f00"/></marker>
+    <marker id="mB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#f97316"/></marker>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="#f97316" stroke="#1b2330" stroke-width="2"/><path d="M4 9 Q13 14 22 9 M4 17 Q13 12 22 17 M13 2 V24" stroke="#1b2330" stroke-width="1.6" fill="none"/></svg>
+      <h1>Combinaisons Handball</h1>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Interface">
+      <button id="tabPlayer" role="tab" aria-selected="true">Joueur</button>
+      <button id="tabCoach" role="tab" aria-selected="false">Coach</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="banner" class="banner" hidden></div>
+
+  <!-- JOUEUR : liste -->
+  <section id="vList" class="view">
+    <div class="row spread">
+      <h2 style="font-size:1.6rem">Combinaisons du club</h2>
+      <span id="count" class="note"></span>
+    </div>
+    <input id="search" class="search" type="search" placeholder="Rechercher une combinaison…" aria-label="Rechercher une combinaison">
+    <div id="cards" class="grid"></div>
+  </section>
+
+  <!-- JOUEUR : lecture -->
+  <section id="vPlay" class="view" hidden>
+    <div class="row">
+      <button id="playBack" class="btn ghost">← Retour</button>
+      <span id="previewTag" class="chip" hidden>Aperçu non enregistré</span>
+      <button id="fsPlay" class="btn" style="margin-left:auto">⛶ Plein écran</button>
+    </div>
+    <div>
+      <h2 id="playName" style="font-size:1.8rem"></h2>
+      <p id="playNotes" class="note" style="margin:4px 0 0"></p>
+    </div>
+    <div class="court"><svg id="svgPlay" viewBox="-12 -22 224 172" role="img" aria-label="Terrain de handball"></svg></div>
+    <div id="caption" class="caption" aria-live="polite"></div>
+    <div id="segs" class="segs"></div>
+    <div class="controls">
+      <button id="cRestart" class="btn" title="Revenir au départ">⟲ <span class="lbl">Début</span></button>
+      <button id="cPrev" class="btn" title="Étape précédente">‹ <span class="lbl">Préc.</span></button>
+      <button id="cPlay" class="btn primary">▶ Lecture</button>
+      <button id="cNext" class="btn" title="Étape suivante"><span class="lbl">Suiv.</span> ›</button>
+    </div>
+    <div class="opts">
+      <span class="row" style="gap:6px">Vitesse
+        <span class="seg-speed" id="speed"><button data-s="0.5">0,5×</button><button data-s="1" class="on">1×</button><button data-s="1.6">1,5×</button></span>
+      </span>
+      <span class="row" style="gap:6px">Transparence défense <span class="seg-speed defT"></span></span>
+      <label class="chk"><input id="optPause" type="checkbox"> Pause à chaque étape</label>
+      <label class="chk"><input id="optTrails" type="checkbox"> Afficher tout le parcours</label>
+    </div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--att)"></i>Attaquants</span>
+      <span><i class="dot" style="background:var(--def)"></i>Défenseurs</span>
+      <span><i class="dot" style="background:var(--gk)"></i>Gardien</span>
+      <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#1d4ed8" stroke-width="2"/></svg>Course</span>
+      <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#f97316" stroke-width="2" stroke-dasharray="4 3"/></svg>Passe / tir</span>
+    </div>
+  </section>
+
+  <!-- COACH : liste -->
+  <section id="vCoach" class="view" hidden>
+    <div class="row spread">
+      <h2 style="font-size:1.6rem">Espace coach</h2>
+      <button id="newBtn" class="btn primary">＋ Nouvelle combinaison</button>
+    </div>
+    <p class="note" style="margin:0">Créez, modifiez et classez les combinaisons. Les joueurs les retrouvent dans l'onglet Joueur.</p>
+    <div id="loginBox" class="panel" hidden>
+      <h3>Connexion coach</h3>
+      <p class="note" style="margin:0">Seuls les coachs inscrits par le club peuvent créer et modifier les combinaisons. Les joueurs n'ont pas besoin de compte.</p>
+      <form id="lgForm" style="display:grid;gap:10px">
+        <div class="field"><label for="lgEmail">E-mail</label><input id="lgEmail" type="email" autocomplete="username" required></div>
+        <div class="field"><label for="lgPass">Mot de passe</label><input id="lgPass" type="password" autocomplete="current-password" required></div>
+        <div class="row"><button id="lgGo" class="btn primary" type="submit">Se connecter</button><span id="lgMsg" class="note"></span></div>
+      </form>
+    </div>
+    <div id="accountBar" class="row spread" hidden>
+      <span id="accountTxt" class="note"></span>
+      <span class="row">
+        <button id="exportBtn" class="btn" type="button">Exporter</button>
+        <label class="btn" for="importFile">Importer</label><input id="importFile" type="file" accept=".json,application/json" hidden>
+        <button id="logoutBtn" class="btn ghost" type="button">Se déconnecter</button>
+      </span>
+    </div>
+    <div id="coachList" class="list"></div>
+  </section>
+
+  <!-- COACH : éditeur -->
+  <section id="vEdit" class="view" hidden>
+    <div class="row spread">
+      <button id="edCancel" class="btn ghost">← Annuler</button>
+      <h2 id="edTitle" style="font-size:1.4rem">Nouvelle combinaison</h2>
+    </div>
+    <div class="field"><label for="edName">Nom de la combinaison</label><input id="edName" maxlength="60" placeholder="Ex. : Croisé DC – ARG"></div>
+    <div class="field"><label for="edNotes">Consigne générale (facultatif)</label><textarea id="edNotes" maxlength="400" placeholder="Objectif, défense visée, point clé…"></textarea></div>
+    <div id="presetBox" class="field"><label for="edPreset">Placement de départ</label>
+      <select id="edPreset"><option value="0-6">Défense 0-6</option><option value="1-5">Défense 1-5</option><option value="none">Attaque seule (sans défenseurs)</option></select>
+    </div>
+    <div id="aiBox" class="panel">
+      <div class="row spread"><h3>Décrire la combinaison en texte</h3><span class="chip">Placement automatique</span></div>
+      <div class="field"><label for="edScript">Racontez l'action dans l'ordre : qui se déplace, qui passe à qui, qui tire</label>
+        <textarea id="edScript" maxlength="1500" rows="4" placeholder="Ex. : Le DC engage vers la gauche, l'ARG croise dans son dos et reçoit la passe. Le pivot bloque le 4. L'ARG tire dans l'intervalle 3-4."></textarea></div>
+      <div class="row"><button id="aiGo" class="btn primary">Générer les déplacements</button><button id="aiUndo" class="btn" hidden>Revenir aux étapes précédentes</button></div>
+      <p id="aiMsg" class="note" style="margin:0"></p>
+    </div>
+    <div class="frames" id="frames"></div>
+    <div class="tool">
+      <button id="undoBtn" class="btn" title="Revenir sur la dernière action">↶ Retour</button>
+      <button id="redoBtn" class="btn" title="Refaire l'action annulée">↷ Avancer</button>
+      <button id="passBtn" class="btn ball">Passe</button>
+      <button id="shootBtn" class="btn ball">Tir au but</button>
+      <button id="fsEdit" class="btn" style="margin-left:auto">⛶ Plein écran</button>
+    </div>
+    <div class="court"><svg id="svgEdit" viewBox="-12 -22 224 172" role="img" aria-label="Terrain de handball, éditeur"></svg></div>
+    <div class="opts"><span class="row" style="gap:6px">Transparence de la défense <span class="seg-speed defT"></span></span></div>
+    <p class="note" style="margin:0">Glissez un pion pour le déplacer à cette étape. <b>Passe :</b> glissez le ballon orange sur le receveur, ou touchez « Passe » puis le receveur. <b>Tir :</b> glissez le ballon dans le but. Une étape est créée automatiquement si besoin. En pointillé : la position à l'étape précédente.</p>
+    <div class="panel">
+      <div class="row spread"><h3 id="stepTitle">Départ</h3><button id="delStep" class="btn danger">Supprimer l'étape</button></div>
+      <div id="stepTextBox" class="field"><label for="stepText">Ce qui se passe à cette étape</label><input id="stepText" maxlength="140" placeholder="Ex. : Le DC engage, l'ARG croise dans son dos"></div>
+      <div id="selBox" class="sel-box"></div>
+      <div class="row">
+        <button id="addStep" class="btn">＋ Ajouter une étape</button>
+      </div>
+    </div>
+    <div class="sticky-actions row spread">
+      <button id="edPreview" class="btn">▶ Prévisualiser</button>
+      <span id="edMsg" class="note"></span>
+      <button id="edSave" class="btn primary">Enregistrer</button>
+    </div>
+  </section>
+</main>
+
+<div id="fs" hidden>
+  <div id="fsCourt" class="fs-court"></div>
+  <div id="fsBar" class="fs-bar"></div>
+</div>
+
+<script>
+// Données de base partagées : effectifs, placements et combinaisons d'exemple.
+// Repère : terrain en demi-terrain, 200 × 200 unités (10 unités = 1 m), but en haut (y = 0).
+var HB = (function () {
+  var ATT = [
+    { id: "a1", team: "A", label: "AG" },
+    { id: "a2", team: "A", label: "ARG" },
+    { id: "a3", team: "A", label: "DC" },
+    { id: "a4", team: "A", label: "ARD" },
+    { id: "a5", team: "A", label: "AD" },
+    { id: "a6", team: "A", label: "PIV" }
+  ];
+  var ATT_POS = { a1: [14, 16], a2: [45, 100], a3: [100, 116], a4: [155, 100], a5: [186, 16], a6: [100, 64] };
+  var DEF = [1, 2, 3, 4, 5, 6].map(function (n) { return { id: "d" + n, team: "D", label: String(n) }; });
+  var GK = { id: "g", team: "G", label: "GB" };
+  var PRESETS = {
+    "0-6": { label: "Défense 0-6", def: [[30, 38], [56, 63], [80, 74], [120, 74], [144, 63], [170, 38]] },
+    "1-5": { label: "Défense 1-5", def: [[30, 38], [58, 64], [100, 98], [122, 74], [148, 62], [172, 38]] },
+    "none": { label: "Attaque seule", def: [] }
+  };
+
+  function makeCombo(preset) {
+    var p = PRESETS[preset] || PRESETS["0-6"];
+    var players = ATT.slice();
+    var pos = {};
+    ATT.forEach(function (a) { pos[a.id] = ATT_POS[a.id].slice(); });
+    p.def.forEach(function (xy, i) { players.push(DEF[i]); pos[DEF[i].id] = xy.slice(); });
+    players.push(GK); pos.g = [100, 9];
+    return {
+      name: "", notes: "", defense: preset in PRESETS ? preset : "0-6",
+      players: players.map(function (x) { return { id: x.id, team: x.team, label: x.label }; }),
+      frames: [{ pos: pos, ball: "a3", text: "" }]
+    };
+  }
+
+  // Ajoute une étape : copie de la précédente, puis modifications.
+  function step(c, changes, ball, text) {
+    var prev = c.frames[c.frames.length - 1];
+    var pos = JSON.parse(JSON.stringify(prev.pos));
+    Object.keys(changes).forEach(function (k) { pos[k] = changes[k]; });
+    c.frames.push({ pos: pos, ball: ball || prev.ball, text: text || "" });
+  }
+
+  function examples() {
+    var list = [];
+
+    var c1 = makeCombo("0-6");
+    c1.name = "Croisé DC – ARG";
+    c1.notes = "Exemple. Le DC attire le défenseur 3, l'ARG croise dans son dos et attaque l'intervalle 3-4.";
+    step(c1, { a3: [70, 98], a2: [90, 110], d3: [78, 80], d2: [58, 70] }, "a3", "Le DC engage vers la gauche, l'ARG croise dans son dos.");
+    step(c1, { a2: [100, 92], a3: [58, 90], d3: [74, 78], d4: [114, 80] }, "a2", "Passe courte à l'ARG lancé dans l'intervalle.");
+    step(c1, { a2: [101, 84] }, "GOAL", "Tir à 9 m entre le 3 et le 4.");
+    list.push(c1);
+
+    var c2 = makeCombo("0-6");
+    c2.name = "Bloc pivot – ARD";
+    c2.notes = "Exemple. Le pivot bloque le défenseur 4 côté intérieur pour libérer la rentrée de l'ARD.";
+    step(c2, { a6: [106, 70], a3: [104, 108] }, "a4", "Passe DC → ARD, le pivot vient bloquer le 4.");
+    step(c2, { a4: [134, 88], d5: [148, 70], d4: [118, 76] }, "a4", "L'ARD fixe le 5 puis rentre à l'intérieur du bloc.");
+    step(c2, { a4: [130, 84] }, "GOAL", "Tir de l'ARD au-dessus du bloc.");
+    list.push(c2);
+
+    var c3 = makeCombo("1-5");
+    c3.name = "Rentrée AG en 2e pivot";
+    c3.notes = "Exemple contre 1-5. L'ailier gauche rentre le long des 6 m pour devenir second pivot.";
+    step(c3, { a1: [34, 44] }, "a2", "Passe DC → ARG, l'AG démarre sa rentrée.");
+    step(c3, { a1: [64, 62], a2: [52, 96], d1: [44, 50], d2: [56, 78] }, "a2", "L'ARG fixe le 2, l'AG s'installe entre le 2 et le 4.");
+    step(c3, { a1: [70, 64] }, "a1", "Passe à l'AG devenu pivot.");
+    step(c3, {}, "GOAL", "L'AG se retourne et tire face au but.");
+    list.push(c3);
+
+    return list;
+  }
+
+  return { ATT: ATT, PRESETS: PRESETS, makeCombo: makeCombo, examples: examples };
+})();
+if (typeof module !== "undefined") module.exports = HB;
+
+</script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var COLORS = { A: "#1d4ed8", D: "#c8312b", G: "#e7a800" };
+  var MARK = { A: "mA", D: "mD", G: "mG" };
+  var fs = { on: false, view: null, rot: false, svg: null, home: null, vb: null, orient: "vertical" };
+  try { if (localStorage.getItem("hb-fs-orient") === "paysage") fs.orient = "paysage"; } catch (e) {}
+  var R = 9, BALL_OFF = [6.5, -6.5], MOVE = 1.35, HOLD = 0.5;
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function lerp(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
+  function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+  function dist(a, b) { return Math.hypot(a[0] - b[0], a[1] - b[1]); }
+  function same(a, b) { return a && b && Math.abs(a[0] - b[0]) < 0.01 && Math.abs(a[1] - b[1]) < 0.01; }
+  function uid() { return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function nSteps(c) { return c.frames.length - 1; }
+  function plural(n, w) { return n + " " + w + (n > 1 ? "s" : ""); }
+
+  /* ---------- Terrain ---------- */
+  var COURT = [
+    '<rect x="-600" y="-600" width="1400" height="1400" fill="#ddcba6"/>',
+    '<rect x="0" y="0" width="200" height="205" fill="#ecdcbc"/>',
+    '<path d="M25 0 A60 60 0 0 0 85 60 L115 60 A60 60 0 0 0 175 0 Z" fill="#c9dbef"/>',
+    '<g fill="none" stroke="#26344d" stroke-width="1.4">',
+    '<rect x="0" y="0" width="200" height="200"/>',
+    '<path d="M25 0 A60 60 0 0 0 85 60 L115 60 A60 60 0 0 0 175 0"/>',
+    '<path d="M0 29.6 A90 90 0 0 0 85 90 L115 90 A90 90 0 0 0 200 29.6" stroke-dasharray="5 4"/>',
+    '<line x1="95" y1="70" x2="105" y2="70" stroke-width="2"/>',
+    '<line x1="98" y1="40" x2="102" y2="40"/>',
+    '<path d="M0 200 H200" stroke-width="2"/>',
+    '</g>',
+    '<g><rect x="85" y="-11" width="30" height="11" fill="#fff" stroke="#26344d" stroke-width="1.2"/>',
+    '<path d="M88 -11 V0 M91 -11 V0 M94 -11 V0 M97 -11 V0 M100 -11 V0 M103 -11 V0 M106 -11 V0 M109 -11 V0 M112 -11 V0 M85 -7.5 H115 M85 -4 H115" stroke="#9aa6b8" stroke-width=".5"/>',
+    '<line x1="85" y1="0" x2="115" y2="0" stroke="#c8312b" stroke-width="2.4" stroke-dasharray="3 3"/></g>',
+    '<g font-family="Barlow, sans-serif" font-size="6" fill="#26344d" opacity=".65">',
+    '<text x="178" y="56">6 m</text><text x="186" y="80">9 m</text><text x="108" y="72.5">7 m</text>',
+    '<text x="100" y="146" text-anchor="middle">Sens de l\'attaque ↑</text></g>'
+  ].join("");
+
+  function setupSvg(svg) { svg.innerHTML = COURT + '<g class="layer"></g>'; return svg.querySelector(".layer"); }
+
+  function holderPos(c, k, h, posMap) {
+    if (h === "GOAL") return goalTarget(c, k);
+    var p = posMap[h];
+    return p ? [p[0] + BALL_OFF[0], p[1] + BALL_OFF[1]] : null;
+  }
+  // Point visé dans le but : côté opposé au tireur.
+  function goalTarget(c, k) {
+    var j = k;
+    while (j > 0 && c.frames[j].ball === "GOAL") j--;
+    var h = c.frames[j].ball, p = c.frames[j].pos[h];
+    var x = p ? (p[0] < 100 ? 109 : 91) : 100;
+    return [x, -5];
+  }
+
+  /* ---------- Transparence de la défense (0 % = pleine, 99 % = quasi invisible) ---------- */
+  var defT = 0;
+  var DEF_STEPS = [0, 25, 50, 70, 100];
+  try { defT = parseInt(localStorage.getItem("hb-def-t") || "0", 10) || 0; } catch (e) {}
+  if (defT === 99) defT = 100;
+  if (DEF_STEPS.indexOf(defT) < 0) defT = 0;
+  function defOp() { return Math.max(0, 1 - defT / 100); }
+
+  /* ---------- Trajectoires qui contournent la zone des 6 m ----------
+     La zone = tous les points à moins de 60 du segment [(85,0),(115,0)].
+     On repère chaque point par (u = position le long du contour, d = distance au segment)
+     et on interpole u et d : le joueur tourne autour de la zone au lieu de la traverser. */
+  var ZR = 60, ZSAFE = 71, U1 = ZR * Math.PI / 2, U2 = U1 + 30;
+  function zoneDist(p) { var qx = Math.max(85, Math.min(115, p[0])); return Math.hypot(p[0] - qx, Math.max(0, p[1])); }
+  function toZ(p) {
+    var x = p[0], y = Math.max(0, p[1]);
+    if (x < 85) return [Math.atan2(y, 85 - x) * ZR, Math.hypot(85 - x, y)];
+    if (x > 115) return [U2 + (Math.PI / 2 - Math.atan2(y, x - 115)) * ZR, Math.hypot(x - 115, y)];
+    return [U1 + (x - 85), y];
+  }
+  function fromZ(u, d) {
+    if (u <= U1) { var f = u / ZR; return [85 - d * Math.cos(f), d * Math.sin(f)]; }
+    if (u <= U2) return [85 + (u - U1), d];
+    var g = (u - U2) / ZR; return [115 + d * Math.sin(g), d * Math.cos(g)];
+  }
+  function segMinZoneDist(a, b) {
+    var m = Infinity;
+    for (var i = 0; i <= 20; i++) m = Math.min(m, zoneDist(lerp(a, b, i / 20)));
+    return m;
+  }
+  // Renvoie une fonction t ∈ [0,1] → position, et indique si le trajet est courbe.
+  function trajectory(a, b, team) {
+    if (team !== "G" && dist(a, b) > 4 && zoneDist(a) >= ZR && zoneDist(b) >= ZR && segMinZoneDist(a, b) < ZSAFE) {
+      var za = toZ(a), zb = toZ(b);
+      var lift = Math.max(0, ZSAFE - Math.min(za[1], zb[1])) ; // marge minimale autour de la zone
+      return { curved: true, at: function (t) {
+        var d = za[1] + (zb[1] - za[1]) * t;
+        d = Math.max(d, ZSAFE - lift * (1 - Math.sin(Math.PI * t)) );
+        if (t <= 0) return a.slice(); if (t >= 1) return b.slice();
+        return fromZ(za[0] + (zb[0] - za[0]) * t, d);
+      } };
+    }
+    return { curved: false, at: function (t) { return lerp(a, b, t); } };
+  }
+
+  // Flèche courbe : polyligne échantillonnée, raccourcie aux deux bouts.
+  function curvedArrow(tr, color, marker, opts) {
+    var pts = [], N = 32;
+    for (var i = 0; i <= N; i++) pts.push(tr.at(i / N));
+    var cum = [0];
+    for (i = 1; i < pts.length; i++) cum.push(cum[i - 1] + dist(pts[i - 1], pts[i]));
+    var L = cum[cum.length - 1], s0 = R + 1, s1 = 2;
+    if (L <= s0 + s1 + 2) return "";
+    function pointAtLen(l) {
+      for (var j = 1; j < pts.length; j++) if (cum[j] >= l) { var f = (l - cum[j - 1]) / ((cum[j] - cum[j - 1]) || 1); return lerp(pts[j - 1], pts[j], f); }
+      return pts[pts.length - 1];
+    }
+    var out = [pointAtLen(s0)];
+    for (i = 1; i < pts.length - 1; i++) if (cum[i] > s0 && cum[i] < L - s1) out.push(pts[i]);
+    out.push(pointAtLen(L - s1));
+    var d = "M" + out.map(function (p) { return p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" L");
+    return '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="' + (opts.w || 2) + '" stroke-linecap="round" stroke-linejoin="round" opacity="' +
+      (opts.op == null ? 1 : opts.op) + '" marker-end="url(#' + marker + ')"/>';
+  }
+
+  function arrow(a, b, color, marker, opts) {
+    opts = opts || {};
+    var d = dist(a, b); if (d < 3) return "";
+    var s0 = opts.trimStart != null ? opts.trimStart : R + 1, s1 = opts.trimEnd != null ? opts.trimEnd : 2;
+    if (d <= s0 + s1 + 2) return "";
+    var ux = (b[0] - a[0]) / d, uy = (b[1] - a[1]) / d;
+    var x1 = a[0] + ux * s0, y1 = a[1] + uy * s0, x2 = b[0] - ux * s1, y2 = b[1] - uy * s1;
+    return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
+      '" stroke="' + color + '" stroke-width="' + (opts.w || 2) + '" stroke-linecap="round"' +
+      (opts.dash ? ' stroke-dasharray="' + opts.dash + '"' : "") + ' opacity="' + (opts.op == null ? 1 : opts.op) +
+      '" marker-end="url(#' + marker + ')"/>';
+  }
+
+  // Flèches de l'étape i → i+1 (courses + passe/tir)
+  function segmentArrows(c, i, op, onlyAtt) {
+    var A = c.frames[i], B = c.frames[i + 1]; if (!A || !B) return "";
+    var out = "";
+    c.players.forEach(function (p) {
+      if (onlyAtt && p.team !== "A") return;
+      var a = A.pos[p.id], b = B.pos[p.id]; if (!a || !b) return;
+      if (dist(a, b) <= 4) return;
+      if (p.team === "D" && defOp() === 0) return;
+      var col = p.team === "G" ? "#b07f00" : COLORS[p.team], o = { op: op * (p.team === "A" ? 1 : (p.team === "D" ? 0.8 * defOp() : 0.8)), w: p.team === "A" ? 2.2 : 1.6 };
+      var tr = trajectory(a, b, p.team);
+      out += tr.curved ? curvedArrow(tr, col, MARK[p.team], o) : arrow(a, b, col, MARK[p.team], o);
+    });
+    if (A.ball !== B.ball && A.ball !== "GOAL") {
+      // La passe part de la position du passeur APRÈS son déplacement.
+      var from = holderPos(c, i, A.ball, B.pos), to = holderPos(c, i + 1, B.ball, B.pos);
+      if (from && to) out += arrow(from, to, "#f97316", "mB", { dash: "4 3", w: B.ball === "GOAL" ? 2.6 : 2, op: op, trimStart: 4, trimEnd: B.ball === "GOAL" ? 1 : 8 });
+    }
+    return out;
+  }
+
+  function pawnSvg(p, xy, o) {
+    o = o || {};
+    var fill = COLORS[p.team], txt = p.team === "G" ? "#1b2330" : "#fff";
+    var fsz = p.label.length >= 3 ? 6.2 : (p.label.length === 2 ? 7 : 8.5);
+    var op = p.team === "D" ? defOp() : 1;
+    var s = '<g class="pawn" data-id="' + p.id + '" transform="translate(' + xy[0].toFixed(2) + ' ' + xy[1].toFixed(2) + ')"' + (op < 1 ? ' opacity="' + op + '"' : "") + (op === 0 ? ' pointer-events="none"' : "") + '>';
+    if (o.hit) s += '<circle r="15" fill="transparent"/>';
+    if (o.selected) s += '<circle r="13.5" fill="none" stroke="#111827" stroke-width="1.6" stroke-dasharray="3 2"/>';
+    s += '<circle r="' + R + '" fill="' + fill + '" stroke="#fff" stroke-width="1.6"/>';
+    s += '<text text-anchor="middle" dy="0.35em" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="' + fsz + '" fill="' + txt + '" pointer-events="none">' + esc(p.label) + '</text></g>';
+    return s;
+  }
+  function ballSvg(xy, grab) {
+    if (!xy) return "";
+    return '<g ' + (grab ? 'data-ball="1" style="cursor:grab"' : 'pointer-events="none"') + ' transform="translate(' + xy[0].toFixed(2) + ' ' + xy[1].toFixed(2) + ')">' + (grab ? '<circle r="9" fill="transparent"/>' : "") + '<circle r="4.2" fill="#f97316" stroke="#1b2330" stroke-width="1.2"/><path d="M-3 -1.5 Q0 0.6 3 -1.5 M-3 1.5 Q0 -0.6 3 1.5" stroke="#1b2330" stroke-width=".7" fill="none"/></g>';
+  }
+  function ghostSvg(xy, team) {
+    if (team === "D" && defOp() < 0.05) return "";
+    return '<circle cx="' + xy[0] + '" cy="' + xy[1] + '" r="' + R + '" fill="none" stroke="' + COLORS[team] + '" stroke-width="1.2" stroke-dasharray="2.5 2" opacity=".7"/>';
+  }
+
+  // Scène à l'instant t (en étapes, ex. 1.5 = au milieu de l'étape 2)
+  function sceneAt(c, t) {
+    var last = nSteps(c);
+    t = Math.max(0, Math.min(last, t));
+    var i = Math.min(Math.floor(t), Math.max(0, last - 1)), f = last === 0 ? 0 : t - i;
+    if (last === 0) i = 0;
+    var A = c.frames[i], B = c.frames[Math.min(i + 1, last)];
+    // Étape avec passe ou tir : les joueurs se déplacent d'abord, puis le ballon part.
+    var PASS_AT = 0.62, hasPass = A.ball !== B.ball && A.ball !== "GOAL";
+    var e = ease(hasPass ? Math.min(1, f / PASS_AT) : f);
+    var pos = {};
+    c.players.forEach(function (p) { if (A.pos[p.id]) pos[p.id] = trajectory(A.pos[p.id], B.pos[p.id] || A.pos[p.id], p.team).at(e); });
+    var ball;
+    if (A.ball === B.ball) ball = holderPos(c, i, A.ball, pos);
+    else if (A.ball === "GOAL") ball = goalTarget(c, i);
+    else {
+      var from = holderPos(c, i, A.ball, pos), to = holderPos(c, i + 1, B.ball, pos);
+      var pf = Math.max(0, Math.min(1, (f - PASS_AT) / (1 - PASS_AT)));
+      ball = (from && to) ? lerp(from, to, pf * (2 - pf)) : (to || from);
+    }
+    return { i: i, f: f, pos: pos, ball: ball };
+  }
+
+  function drawStatic(layer, c, opts) {
+    // Vignette : départ + parcours complet des attaquants
+    var s = "";
+    for (var i = 0; i < nSteps(c); i++) s += segmentArrows(c, i, 0.85, true);
+    var F = c.frames[0];
+    c.players.forEach(function (p) { if (F.pos[p.id]) s += pawnSvg(p, F.pos[p.id]); });
+    s += ballSvg(holderPos(c, 0, F.ball, F.pos));
+    layer.innerHTML = s;
+  }
+
+  /* ---------- Stockage ---------- */
+  var S = { combos: [], mode: "loading", canWrite: null, db: null, ready: false, sample: null };
+  var banner = $("banner");
+  function showBanner(html) { banner.innerHTML = html; banner.hidden = !html; }
+
+  function normalize(id, d) {
+    if (!d || !Array.isArray(d.frames) || !Array.isArray(d.players) || !d.frames.length) return null;
+    return { id: id, name: String(d.name || "Sans nom").slice(0, 60), notes: String(d.notes || "").slice(0, 400),
+      defense: d.defense || "0-6", script: String(d.script || "").slice(0, 1500), players: d.players, frames: d.frames, updatedAt: d.updatedAt || 0 };
+  }
+  function sortCombos() { S.combos.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { numeric: true, sensitivity: "base" }); }); }
+
+  var LS_KEY = "hb-combos-v1";
+  function localLoad() {
+    try { var raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return HB.examples().map(function (c) { c.id = uid(); return c; });
+  }
+  function localSave() { try { localStorage.setItem(LS_KEY, JSON.stringify(S.combos)); } catch (e) {} }
+
+  function startLocal(reason) {
+    S.mode = "local"; S.canWrite = true;
+    S.combos = localLoad().map(function (c) { return normalize(c.id, c); }).filter(Boolean);
+    sortCombos();
+    showBanner(reason);
+    renderAll();
+  }
+
+  var BACKEND = window.HB_BACKEND || "claude";
+
+  /* ---------- Version autonome : Firebase ---------- */
+  function initFirebase() {
+    var cfg = window.FIREBASE_CONFIG || {};
+    S.sample = null; updateAiBox();
+    if (!window.firebase || !cfg.apiKey || /REMPLIR/.test(cfg.apiKey)) {
+      startLocal("Configuration Firebase à compléter : en attendant, les combinaisons restent sur cet appareil.");
+      return;
+    }
+    try { firebase.initializeApp(cfg); } catch (e) {}
+    S.fdb = firebase.firestore(); S.auth = firebase.auth(); S.mode = "fb"; S.canWrite = false; S.user = null;
+    applyRole();
+    S.auth.onAuthStateChanged(function (u) { S.user = u; S.canWrite = !!u; applyRole(); renderCoachList(); });
+    var timer = setTimeout(function () {
+      if (!S.ready) showBanner("Les combinaisons ne sont pas encore accessibles. Vérifiez votre connexion ; la liste s'affichera dès qu'elle sera chargée.");
+    }, 10000);
+    S.fdb.collection("combos").onSnapshot(function (snap) {
+      S.combos = snap.docs.map(function (d) { return normalize(d.id, d.data()); }).filter(Boolean);
+      sortCombos(); S.ready = true; clearTimeout(timer); showBanner(""); renderAll();
+    }, function (err) {
+      clearTimeout(timer); S.ready = true;
+      showBanner("Impossible de charger les combinaisons (" + esc(err && err.code) + "). Vérifiez les règles Firestore.");
+      renderAll();
+    });
+  }
+  $("lgForm").onsubmit = async function (e) {
+    e.preventDefault();
+    var m = $("lgMsg"); m.className = "note"; m.textContent = "Connexion…";
+    try {
+      await S.auth.signInWithEmailAndPassword($("lgEmail").value.trim(), $("lgPass").value);
+      m.textContent = ""; $("lgPass").value = "";
+    } catch (err) {
+      m.className = "note err";
+      m.textContent = /network/.test(err && err.code) ? "Pas de connexion internet." : "E-mail ou mot de passe incorrect.";
+    }
+  };
+  $("logoutBtn").onclick = function () { if (S.auth) S.auth.signOut(); };
+  $("exportBtn").onclick = function () {
+    var data = S.combos.map(function (c) { return { id: c.id, name: c.name, notes: c.notes, script: c.script || "", defense: c.defense, players: c.players, frames: c.frames }; });
+    var blob = new Blob([JSON.stringify({ combos: data }, null, 1)], { type: "application/json" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = "combinaisons-handball-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  $("importFile").onchange = async function () {
+    var f = this.files && this.files[0]; this.value = ""; if (!f) return;
+    try {
+      var j = JSON.parse(await f.text()), list = Array.isArray(j) ? j : (j.combos || []), n = 0;
+      for (var i = 0; i < list.length; i++) {
+        var c = normalize(list[i].id || uid(), list[i]); if (!c) continue;
+        c.id = String(list[i].id || uid()).replace(/[^A-Za-z0-9_\-]/g, "") || uid();
+        await saveCombo(c); n++;
+      }
+      showBanner(plural(n, "combinaison") + " importée" + (n > 1 ? "s" : "") + ".");
+    } catch (err) { showBanner(esc(err && err.code ? writeError(err) : "Fichier illisible : choisissez un fichier exporté depuis l'application.")); }
+  };
+
+  async function initStore() {
+    if (BACKEND === "firebase") { initFirebase(); return; }
+    var db = null, user = null;
+    try {
+      if (window.claude && typeof window.claude.use === "function") {
+        var r = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+        db = r[0]; user = r[1];
+      }
+    } catch (e) { db = null; }
+    try { if (window.claude && typeof window.claude.use === "function") S.sample = await window.claude.use("sample"); } catch (e) { S.sample = null; }
+    updateAiBox();
+    if (!db) { startLocal("Mode local : les combinaisons sont enregistrées sur cet appareil uniquement. Ouvrez la page depuis son lien Claude pour les partager avec l'équipe."); return; }
+    S.db = db; S.mode = "db";
+    try { S.canWrite = user ? await user.can("data.write") : null; } catch (e) { S.canWrite = null; }
+    applyRole();
+    var timer = setTimeout(function () {
+      if (!S.ready) { showBanner("Les combinaisons ne sont pas encore accessibles. Vérifiez votre connexion ; la liste s'affichera dès qu'elle sera chargée."); }
+    }, 10000);
+    db.collection("combos").onSnapshot(function (snap) {
+      S.combos = snap.docs.map(function (d) { return normalize(d.id, d.data()); }).filter(Boolean);
+      sortCombos();
+      if (!snap.metadata.fromCache) { S.ready = true; clearTimeout(timer); showBanner(""); }
+      renderAll();
+    }, function (err) {
+      clearTimeout(timer); S.ready = true;
+      showBanner("Impossible de charger les combinaisons pour le moment (" + esc(err && err.code) + ").");
+      renderAll();
+    });
+  }
+
+  async function saveCombo(c) {
+    var body = { name: c.name, notes: c.notes, script: c.script || "", defense: c.defense, players: c.players, frames: c.frames, updatedAt: Date.now() };
+    if (S.mode === "local") {
+      var i = S.combos.findIndex(function (x) { return x.id === c.id; });
+      var n = normalize(c.id, body);
+      if (i >= 0) S.combos[i] = n; else S.combos.push(n);
+      sortCombos(); localSave(); renderAll(); return;
+    }
+    if (S.mode === "fb") { await S.fdb.collection("combos").doc(c.id).set(body); return; }
+    await S.db.collection("combos").doc(c.id).set(body);
+  }
+  async function deleteCombo(id) {
+    if (S.mode === "local") { S.combos = S.combos.filter(function (x) { return x.id !== id; }); localSave(); renderAll(); return; }
+    if (S.mode === "fb") { await S.fdb.collection("combos").doc(id).delete(); return; }
+    await S.db.collection("combos").doc(id).delete();
+  }
+  function writeError(e) {
+    if (e && e.code === "permission-denied") return "Enregistrement refusé : ce compte n'est pas autorisé comme coach.";
+    if (e && e.code === "invalid_argument") { S.canWrite = false; applyRole(); return "Enregistrement refusé : seul un coach (accès Contributeur ou plus) peut modifier les combinaisons."; }
+    if (e && e.code === "quota_exceeded") return "Espace plein : supprimez d'anciennes combinaisons puis réessayez.";
+    return "Enregistrement impossible pour l'instant. Réessayez dans un instant.";
+  }
+
+  /* ---------- Navigation ---------- */
+  var current = "vList";
+  function show(view) {
+    if (fs.on) exitFs();
+    ["vList", "vPlay", "vCoach", "vEdit"].forEach(function (v) { $(v).hidden = v !== view; });
+    current = view;
+    var coach = view === "vCoach" || view === "vEdit" || (view === "vPlay" && vw.preview);
+    $("tabPlayer").setAttribute("aria-selected", String(!coach));
+    $("tabCoach").setAttribute("aria-selected", String(coach));
+    if (view !== "vPlay") stopPlay();
+    window.scrollTo(0, 0);
+  }
+  function applyRole() {
+    if (S.mode === "fb") {
+      var logged = !!S.user;
+      $("tabCoach").hidden = false;
+      $("loginBox").hidden = logged;
+      $("accountBar").hidden = !logged;
+      $("newBtn").hidden = !logged;
+      $("coachList").hidden = !logged;
+      $("accountTxt").textContent = logged ? "Connecté : " + (S.user.email || "") : "";
+      if (!logged && current === "vEdit") show("vCoach");
+      return;
+    }
+    $("tabCoach").hidden = S.canWrite === false;
+    if (S.canWrite === false && (current === "vCoach" || current === "vEdit")) show("vList");
+  }
+  $("tabPlayer").onclick = function () { show("vList"); };
+  $("tabCoach").onclick = function () { show("vCoach"); };
+
+  function metaChips(c) {
+    var d = (HB.PRESETS[c.defense] || HB.PRESETS["0-6"]).label;
+    return '<span class="chip">' + plural(nSteps(c), "étape") + '</span><span class="chip">' + esc(d) + '</span>';
+  }
+
+  function renderAll() {
+    renderCards(); renderCoachList();
+    if (current === "vPlay" && vw.combo && !vw.preview) {
+      var fresh = S.combos.find(function (x) { return x.id === vw.combo.id; });
+      if (fresh && JSON.stringify(fresh.frames) !== JSON.stringify(vw.combo.frames)) openPlay(fresh, false, true);
+    }
+  }
+
+  /* ---------- Liste joueur ---------- */
+  $("search").oninput = renderCards;
+  function renderCards() {
+    var q = $("search").value.trim().toLowerCase();
+    var list = S.combos.filter(function (c) { return !q || (c.name + " " + c.notes).toLowerCase().indexOf(q) >= 0; });
+    $("count").textContent = S.mode === "loading" ? "Chargement…" : plural(S.combos.length, "combinaison");
+    var box = $("cards");
+    if (!S.combos.length) {
+      box.innerHTML = '<div class="empty" style="grid-column:1/-1">' + (S.mode === "loading" ? "Chargement des combinaisons…" : "Aucune combinaison pour l'instant. Le coach les crée dans l'onglet Coach.") + '</div>';
+      return;
+    }
+    if (!list.length) { box.innerHTML = '<div class="empty" style="grid-column:1/-1">Aucune combinaison ne correspond à « ' + esc(q) + ' ».</div>'; return; }
+    box.innerHTML = "";
+    list.forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "card";
+      b.innerHTML = '<svg viewBox="-12 -22 224 172" aria-hidden="true"></svg><h3>' + esc(c.name) + '</h3><div class="chips">' + metaChips(c) + '</div>' + (c.notes ? '<p>' + esc(c.notes) + '</p>' : "");
+      drawStatic(setupSvg(b.querySelector("svg")), c);
+      b.onclick = function () { openPlay(c, false); };
+      box.appendChild(b);
+    });
+  }
+
+  /* ---------- Lecture ---------- */
+  var vw = { combo: null, t: 0, playing: false, target: 0, hold: 0, speed: 1, last: 0, raf: 0, preview: false, stopAt: null };
+  var playLayer = setupSvg($("svgPlay"));
+
+  function openPlay(c, preview, keepT) {
+    stopPlay();
+    vw.combo = clone(c); vw.preview = !!preview;
+    if (!keepT) vw.t = 0; else vw.t = Math.min(Math.round(vw.t), nSteps(vw.combo));
+    $("playName").textContent = c.name || "Sans nom";
+    $("playNotes").textContent = c.notes || "";
+    $("playNotes").hidden = !c.notes;
+    $("previewTag").hidden = !preview;
+    $("playBack").textContent = preview ? "← Retour à l'éditeur" : "← Combinaisons";
+    buildSegs();
+    if (current !== "vPlay") show("vPlay");
+    drawPlay();
+  }
+  $("playBack").onclick = function () { stopPlay(); if (vw.preview) show("vEdit"); else show("vList"); };
+
+  function buildSegs() {
+    var n = nSteps(vw.combo), box = $("segs"); box.innerHTML = "";
+    for (var k = 0; k <= n; k++) {
+      var b = document.createElement("button");
+      b.textContent = k === 0 ? "Départ" : String(k);
+      b.title = k === 0 ? "Position de départ" : "Aller à l'étape " + k;
+      if (k === 0) b.style.flex = "1.6";
+      (function (k) { b.onclick = function () { stopPlay(); vw.t = k; drawPlay(); }; })(k);
+      box.appendChild(b);
+    }
+  }
+
+  function drawPlay() {
+    var c = vw.combo, n = nSteps(c), sc = sceneAt(c, vw.t), s = "";
+    if ($("optTrails").checked) for (var k = 0; k < n; k++) if (k !== sc.i) s += segmentArrows(c, k, 0.28);
+    if (n > 0) {
+      var atEnd = vw.t >= n - 1e-6;
+      s += segmentArrows(c, sc.i, atEnd && !vw.playing ? 0.35 : 1);
+    }
+    c.players.forEach(function (p) { if (sc.pos[p.id]) s += pawnSvg(p, sc.pos[p.id]); });
+    s += ballSvg(sc.ball);
+    playLayer.innerHTML = s;
+
+    // Légende de l'étape
+    var shown = Math.round(vw.t), moving = Math.abs(vw.t - shown) > 1e-3;
+    var stepNo = moving ? Math.min(n, sc.i + 1) : shown;
+    var cap;
+    if (n === 0) cap = "<b>Départ</b>Cette combinaison n'a pas encore d'étape.";
+    else if (stepNo === 0) cap = "<b>Départ</b>" + esc("Position de départ. Lancez la lecture ou avancez étape par étape.");
+    else cap = "<b>Étape " + stepNo + "/" + n + "</b>" + esc(c.frames[stepNo].text || (c.frames[stepNo].ball === "GOAL" ? "Tir au but." : ""));
+    $("caption").innerHTML = cap;
+    Array.prototype.forEach.call($("segs").children, function (b, k) { b.classList.toggle("on", k === stepNo); });
+    $("cPlay").innerHTML = vw.playing ? "❚❚ Pause" : (vw.t >= n - 1e-6 && n > 0 ? "▶ Rejouer" : "▶ Lecture");
+    $("cPrev").disabled = vw.t <= 1e-6;
+    $("cNext").disabled = vw.t >= n - 1e-6;
+    $("cPlay").disabled = n === 0;
+    if (fs.on && fs.view === "play") {
+      $("fsPlayBtn").textContent = $("cPlay").textContent; $("fsPlayBtn").disabled = n === 0;
+      $("fsPrev").disabled = $("cPrev").disabled; $("fsNext").disabled = $("cNext").disabled;
+      $("fsStep").textContent = $("caption").textContent.replace(/^(Départ|Étape \d+\/\d+)/, "$1 · ");
+    }
+  }
+
+  function startPlay(stopAt) {
+    var n = nSteps(vw.combo); if (n === 0) return;
+    if (vw.t >= n - 1e-6) vw.t = 0;
+    vw.t = Math.floor(vw.t + 1e-6);
+    vw.target = vw.t + 1; vw.stopAt = stopAt; vw.playing = true; vw.hold = 0; vw.last = performance.now();
+    cancelAnimationFrame(vw.raf); vw.raf = requestAnimationFrame(tick);
+    drawPlay();
+  }
+  function stopPlay() { vw.playing = false; cancelAnimationFrame(vw.raf); if (vw.combo && current === "vPlay") drawPlay(); }
+  function tick(now) {
+    if (!vw.playing) return;
+    var dt = Math.min(0.05, (now - vw.last) / 1000); vw.last = now;
+    var n = nSteps(vw.combo);
+    if (vw.hold > 0) { vw.hold -= dt * vw.speed; if (vw.hold <= 0) vw.target = Math.min(n, vw.target + 1); }
+    else {
+      vw.t += dt * vw.speed / MOVE;
+      if (vw.t >= vw.target) {
+        vw.t = vw.target;
+        if (vw.t >= n || vw.stopAt === vw.t || $("optPause").checked) { vw.playing = false; drawPlay(); return; }
+        vw.hold = HOLD;
+      }
+    }
+    drawPlay();
+    vw.raf = requestAnimationFrame(tick);
+  }
+  $("cPlay").onclick = function () { if (vw.playing) stopPlay(); else startPlay(null); };
+  $("cNext").onclick = function () {
+    var k = Math.floor(vw.t + 1e-6);
+    if (vw.playing) { stopPlay(); vw.t = Math.min(nSteps(vw.combo), k + 1); drawPlay(); return; }
+    startPlay(k + 1);
+  };
+  $("cPrev").onclick = function () { stopPlay(); vw.t = Math.max(0, Math.ceil(vw.t - 1e-6) - 1); drawPlay(); };
+  $("cRestart").onclick = function () { stopPlay(); vw.t = 0; drawPlay(); };
+  $("optTrails").onchange = drawPlay;
+  Array.prototype.forEach.call($("speed").children, function (b) {
+    b.onclick = function () {
+      vw.speed = parseFloat(b.getAttribute("data-s"));
+      Array.prototype.forEach.call($("speed").children, function (x) { x.classList.toggle("on", x === b); });
+    };
+  });
+
+  /* ---------- Liste coach ---------- */
+  var pendingDelete = null;
+  function renderCoachList() {
+    var box = $("coachList");
+    if (!S.combos.length) { box.innerHTML = '<div class="empty">' + (S.mode === "loading" ? "Chargement…" : "Aucune combinaison. Créez la première avec « Nouvelle combinaison ».") + '</div>'; return; }
+    box.innerHTML = "";
+    S.combos.forEach(function (c) {
+      var it = document.createElement("div"); it.className = "item";
+      var t = '<div class="t"><b>' + esc(c.name) + '</b><div class="chips">' + metaChips(c) + '</div></div>';
+      if (pendingDelete === c.id) {
+        it.innerHTML = t + '<span class="inline-confirm">Supprimer définitivement ?<button class="btn danger" data-a="yes">Supprimer</button><button class="btn" data-a="no">Garder</button></span>';
+      } else {
+        it.innerHTML = t + '<div class="row"><button class="btn" data-a="view">Voir</button><button class="btn" data-a="edit">Modifier</button><button class="btn" data-a="dup">Dupliquer</button><button class="btn danger" data-a="del">Supprimer</button></div>';
+      }
+      it.onclick = async function (e) {
+        var a = e.target.closest("[data-a]"); if (!a) return;
+        var act = a.getAttribute("data-a");
+        if (act === "view") openPlay(c, false);
+        else if (act === "edit") openEditor(c);
+        else if (act === "dup") { var d = clone(c); d.id = uid(); d.name = (c.name + " (copie)").slice(0, 60); openEditor(d, true); }
+        else if (act === "del") { pendingDelete = c.id; renderCoachList(); }
+        else if (act === "no") { pendingDelete = null; renderCoachList(); }
+        else if (act === "yes") {
+          pendingDelete = null; a.disabled = true;
+          try { await deleteCombo(c.id); } catch (err) { showBanner(esc(writeError(err))); }
+          renderCoachList();
+        }
+      };
+      box.appendChild(it);
+    });
+  }
+  $("newBtn").onclick = function () { var c = HB.makeCombo("0-6"); c.id = uid(); openEditor(c, true); };
+
+  /* ---------- Éditeur ---------- */
+  var ed = { c: null, k: 0, sel: null, drag: null, isNew: false, dirty: false, undo: null, passMode: false, ballDrag: null, hist: [], fut: [] };
+  // Historique des actions : chaque modification enregistre l'état précédent.
+  function edState() { return JSON.stringify({ players: ed.c.players, frames: ed.c.frames, defense: ed.c.defense, k: ed.k }); }
+  function snap() { ed.hist.push(edState()); if (ed.hist.length > 80) ed.hist.shift(); ed.fut = []; }
+  function restore(json) {
+    var st = JSON.parse(json);
+    ed.c.players = st.players; ed.c.frames = st.frames; ed.c.defense = st.defense;
+    ed.k = Math.min(st.k, ed.c.frames.length - 1); ed.sel = null; ed.passMode = false; ed.dirty = true;
+    $("edPreset").value = ed.c.defense || "0-6";
+    renderEditor();
+  }
+  function undoAction() { if (!ed.hist.length) return; ed.fut.push(edState()); restore(ed.hist.pop()); edNote("Action annulée."); }
+  function redoAction() { if (!ed.fut.length) return; ed.hist.push(edState()); restore(ed.fut.pop()); edNote("Action rétablie."); }
+  var editSvg = $("svgEdit"), editLayer = setupSvg(editSvg);
+  function labelOf(id) { var p = ed.c.players.find(function (x) { return x.id === id; }); return p ? p.label : id; }
+
+  function openEditor(c, isNew) {
+    ed.c = clone(c); ed.k = 0; ed.sel = null; ed.isNew = !!isNew; ed.dirty = false; ed.passMode = false; ed.ballDrag = null; ed.hist = []; ed.fut = [];
+    $("edTitle").textContent = isNew ? "Nouvelle combinaison" : "Modifier la combinaison";
+    $("edName").value = ed.c.name || ""; $("edNotes").value = ed.c.notes || "";
+    $("edPreset").value = ed.c.defense || "0-6";
+    $("edMsg").textContent = ""; $("edMsg").className = "note";
+    $("edScript").value = ed.c.script || ""; ed.undo = null; aiMsg("", false); updateAiBox();
+    show("vEdit"); renderEditor();
+  }
+  $("edName").oninput = function () { ed.c.name = this.value; ed.dirty = true; };
+  $("edNotes").oninput = function () { ed.c.notes = this.value; ed.dirty = true; };
+  $("edScript").oninput = function () { ed.c.script = this.value; ed.dirty = true; updateAiBox(); };
+  $("stepText").oninput = function () { if (ed.k > 0) { ed.c.frames[ed.k].text = this.value; ed.dirty = true; } };
+  $("edPreset").onchange = function () {
+    snap();
+    var fresh = HB.makeCombo(this.value);
+    ed.c.players = fresh.players; ed.c.frames = fresh.frames; ed.c.defense = this.value; ed.k = 0; ed.sel = null; ed.dirty = true;
+    renderEditor();
+  };
+
+  function renderEditor() {
+    var c = ed.c, k = ed.k, F = c.frames[k], P = k > 0 ? c.frames[k - 1] : null, s = "";
+    if (P) {
+      c.players.forEach(function (p) { if (P.pos[p.id] && !same(P.pos[p.id], F.pos[p.id])) s += ghostSvg(P.pos[p.id], p.team); });
+      s += segmentArrows(c, k - 1, 1);
+    }
+    var bpos = holderPos(c, k, F.ball, F.pos), target = null;
+    if (ed.ballDrag && ed.ballDrag.cur) target = dropTarget(ed.ballDrag.cur);
+    c.players.forEach(function (p) {
+      if (!F.pos[p.id]) return;
+      var hl = ed.sel === p.id || (target && target.id === p.id) || (ed.passMode && p.team === "A" && p.id !== F.ball);
+      s += pawnSvg(p, F.pos[p.id], { hit: true, selected: hl });
+    });
+    if (ed.ballDrag && ed.ballDrag.cur && bpos) {
+      var to = target ? (target.goal ? [target.x, -5] : F.pos[target.id]) : ed.ballDrag.cur;
+      s += arrow(bpos, to, "#f97316", "mB", { dash: "4 3", w: 2.4, trimStart: 4, trimEnd: target && !target.goal ? R + 2 : 1 });
+      if (target && target.goal) s += '<rect x="85" y="-11" width="30" height="11" fill="#f97316" opacity=".35" pointer-events="none"/>';
+    }
+    s += ballSvg(ed.ballDrag && ed.ballDrag.cur && !target ? ed.ballDrag.cur : bpos, true);
+    editLayer.innerHTML = s;
+
+    // Étapes
+    var fb = $("frames"); fb.innerHTML = "";
+    c.frames.forEach(function (f, i) {
+      var b = document.createElement("button");
+      b.textContent = i === 0 ? "Départ" : "Étape " + i;
+      if (i === k) b.className = "on";
+      b.onclick = function () { goStep(i); };
+      fb.appendChild(b);
+    });
+    var add = document.createElement("button"); add.className = "add"; add.textContent = "＋ Étape";
+    add.onclick = function () { addStep(); }; fb.appendChild(add);
+
+    $("presetBox").hidden = !(k === 0 && c.frames.length === 1);
+    $("stepTitle").textContent = k === 0 ? "Position de départ" : "Étape " + k + " sur " + nSteps(c);
+    $("delStep").hidden = k === 0;
+    $("stepTextBox").hidden = k === 0;
+    if (document.activeElement !== $("stepText")) $("stepText").value = k > 0 ? (F.text || "") : "";
+    $("shootBtn").disabled = !F.ball;
+    $("shootBtn").classList.toggle("on", F.ball === "GOAL");
+    $("shootBtn").textContent = F.ball === "GOAL" ? "Tir ✓ (annuler)" : "Tir au but";
+    $("undoBtn").disabled = !ed.hist.length; $("redoBtn").disabled = !ed.fut.length;
+    $("passBtn").classList.toggle("on", !!ed.passMode);
+    $("passBtn").textContent = ed.passMode ? "Touchez le receveur…" : "Passe";
+    $("passBtn").disabled = !F.ball || F.ball === "GOAL";
+
+    // Sélection
+    var sb = $("selBox");
+    var holderTxt = F.ball === "GOAL" ? "le ballon part au but" : "ballon : " + labelOf(F.ball);
+    if (!ed.sel) {
+      sb.innerHTML = '<span class="note" style="margin-right:auto">Aucun pion sélectionné · ' + esc(holderTxt) + '</span>';
+    } else {
+      var p = c.players.find(function (x) { return x.id === ed.sel; });
+      var canBall = p.team === "A" && F.ball !== p.id;
+      sb.innerHTML = '<span style="margin-right:auto"><b>' + esc(p.label) + '</b> sélectionné · ' + esc(holderTxt) + '</span>' +
+        (p.team === "A" && k === 0 ? '<button class="btn" id="giveBall"' + (canBall ? "" : " disabled") + '>' + (F.ball === p.id ? "A le ballon" : "Lui donner le ballon au départ") + '</button>' : "") +
+        '<button class="btn ghost" id="unsel">Désélectionner</button>';
+      var gb = $("giveBall"); if (gb) gb.onclick = function () { snap(); setBall(0, p.id); };
+      $("unsel").onclick = function () { ed.sel = null; renderEditor(); };
+    }
+    if (fs.on && fs.view === "edit") renderFsBar();
+  }
+
+  function goStep(i) { ed.k = i; ed.sel = null; ed.passMode = false; renderEditor(); }
+
+  function setBall(k, h) {
+    var fr = ed.c.frames, old = fr[k].ball;
+    fr[k].ball = h;
+    for (var j = k + 1; j < fr.length && fr[j].ball === old; j++) fr[j].ball = h;
+    ed.dirty = true; renderEditor();
+  }
+  // Une passe par étape : si l'étape en contient déjà une (ou si l'on est au départ), on crée l'étape suivante.
+  function needsNewStep() { var fr = ed.c.frames, k = ed.k; return k === 0 || fr[k].ball !== fr[k - 1].ball; }
+  function doPass(id) {
+    var F = ed.c.frames[ed.k];
+    if (!F.ball || F.ball === "GOAL" || F.ball === id) return;
+    snap();
+    var created = needsNewStep();
+    if (created) addStep(true);
+    setBall(ed.k, id);
+    edNote("Passe vers le " + labelOf(id) + (created ? " (étape " + ed.k + " créée)." : "."));
+  }
+  function doShoot() {
+    var fr = ed.c.frames, k = ed.k;
+    if (fr[k].ball === "GOAL") { snap(); setBall(k, fr[k - 1].ball); return; }
+    if (!fr[k].ball) return;
+    snap();
+    var created = needsNewStep();
+    if (created) addStep(true);
+    setBall(ed.k, "GOAL");
+    edNote("Tir au but" + (created ? " (étape " + ed.k + " créée)." : "."));
+  }
+  function edNote(t) { var m = $("edMsg"); m.className = "note"; m.textContent = t; if (fs.on) { var f = $("fsMsg"); if (f) f.textContent = t; } }
+  $("undoBtn").onclick = undoAction;
+  $("redoBtn").onclick = redoAction;
+  $("shootBtn").onclick = function () { ed.passMode = false; doShoot(); };
+  $("passBtn").onclick = function () { ed.passMode = !ed.passMode; ed.sel = null; renderEditor(); };
+  function addStep(silent) {
+    if (!silent) snap();
+    var fr = ed.c.frames, f = clone(fr[ed.k]); f.text = "";
+    if (f.ball === "GOAL") f.ball = fr[ed.k].ball;
+    fr.splice(ed.k + 1, 0, f); ed.k++; ed.sel = null; ed.dirty = true;
+    if (silent) return;
+    ed.passMode = false; renderEditor();
+    if (!fs.on) $("stepText").focus({ preventScroll: true });
+  }
+  $("addStep").onclick = function () { addStep(); };
+  $("delStep").onclick = function () {
+    if (ed.k === 0) return;
+    snap();
+    ed.c.frames.splice(ed.k, 1); ed.k = Math.max(0, ed.k - 1); ed.sel = null; ed.dirty = true; renderEditor();
+  };
+
+  // Où tombe le ballon lâché : sur un attaquant (passe) ou dans le but (tir).
+  function dropTarget(pt) {
+    var F = ed.c.frames[ed.k], best = null, bd = 16;
+    ed.c.players.forEach(function (p) {
+      if (p.team !== "A" || p.id === F.ball || !F.pos[p.id]) return;
+      var d = Math.hypot(F.pos[p.id][0] - pt[0], F.pos[p.id][1] - pt[1]);
+      if (d < bd) { bd = d; best = { id: p.id }; }
+    });
+    if (!best && pt[1] < 16 && pt[0] > 72 && pt[0] < 128) best = { goal: true, x: pt[0] < 100 ? 91 : 109 };
+    return best;
+  }
+
+  function svgPoint(e, svg, layer) {
+    svg = svg || editSvg; layer = layer || editLayer;
+    if (fs.on && fs.rot) {
+      // Vue tournée de 90° : conversion manuelle, fiable sur tous les navigateurs.
+      var r = svg.getBoundingClientRect(), lx = e.clientY - r.top, ly = r.right - e.clientX;
+      var W = r.height, H = r.width, vb = svg.viewBox.baseVal, sc = Math.min(W / vb.width, H / vb.height);
+      return { x: vb.x + (lx - (W - vb.width * sc) / 2) / sc, y: vb.y + (ly - (H - vb.height * sc) / 2) / sc };
+    }
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    return pt.matrixTransform(layer.getScreenCTM().inverse());
+  }
+  editSvg.addEventListener("pointerdown", function (e) {
+    var bl = e.target.closest && e.target.closest("[data-ball]");
+    if (bl && !ed.passMode) {
+      e.preventDefault();
+      ed.ballDrag = { pid: e.pointerId, cur: null };
+      try { editSvg.setPointerCapture(e.pointerId); } catch (_) {}
+      return;
+    }
+    var g = e.target.closest && e.target.closest("[data-id]");
+    if (!g) { if (ed.sel || ed.passMode) { ed.sel = null; ed.passMode = false; renderEditor(); } return; }
+    e.preventDefault();
+    var id = g.getAttribute("data-id"), p = svgPoint(e), cur = ed.c.frames[ed.k].pos[id];
+    ed.drag = { id: id, orig: cur.slice(), dx: cur[0] - p.x, dy: cur[1] - p.y, sx: p.x, sy: p.y, moved: false, pid: e.pointerId };
+    try { editSvg.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  editSvg.addEventListener("pointermove", function (e) {
+    if (ed.ballDrag && e.pointerId === ed.ballDrag.pid) { var q = svgPoint(e); ed.ballDrag.cur = [q.x, q.y]; renderEditor(); return; }
+    var d = ed.drag; if (!d || e.pointerId !== d.pid) return;
+    var p = svgPoint(e);
+    if (!d.moved && Math.hypot(p.x - d.sx, p.y - d.sy) < 3) return;
+    if (!d.moved) snap();
+    d.moved = true;
+    var x = Math.max(-6, Math.min(206, p.x + d.dx)), y = Math.max(2, Math.min(140, p.y + d.dy));
+    ed.c.frames[ed.k].pos[d.id] = [Math.round(x * 2) / 2, Math.round(y * 2) / 2];
+    ed.sel = d.id;
+    renderEditor();
+  });
+  function endDrag(e) {
+    if (ed.ballDrag && e.pointerId === ed.ballDrag.pid) {
+      var bd = ed.ballDrag; ed.ballDrag = null;
+      var t = bd.cur && e.type === "pointerup" ? dropTarget(bd.cur) : null;
+      if (t && t.goal) doShoot(); else if (t) doPass(t.id); else { if (!bd.cur) { ed.passMode = true; edNote("Touchez le receveur de la passe."); } renderEditor(); }
+      return;
+    }
+    var d = ed.drag; if (!d || e.pointerId !== d.pid) return;
+    ed.drag = null;
+    if (!d.moved) {
+      var pl = ed.c.players.find(function (x) { return x.id === d.id; });
+      if (ed.passMode) { ed.passMode = false; if (pl && pl.team === "A") doPass(d.id); else renderEditor(); return; }
+      ed.sel = ed.sel === d.id ? null : d.id; renderEditor(); return;
+    }
+    var fr = ed.c.frames, np = fr[ed.k].pos[d.id];
+    // Les étapes suivantes où le joueur n'avait pas bougé suivent le déplacement.
+    for (var j = ed.k + 1; j < fr.length && same(fr[j].pos[d.id], d.orig); j++) fr[j].pos[d.id] = np.slice();
+    ed.dirty = true; renderEditor();
+  }
+  editSvg.addEventListener("pointerup", endDrag);
+  editSvg.addEventListener("pointercancel", endDrag);
+
+  /* ---------- Placement automatique à partir du texte ---------- */
+  var ROLE = { AG: "ailier gauche", ARG: "arrière gauche", DC: "demi-centre", ARD: "arrière droit", AD: "ailier droit", PIV: "pivot" };
+  var ai = { busy: false, ctrl: null };
+  function aiMsg(t, err) { var m = $("aiMsg"); m.textContent = t; m.className = err ? "note err" : "note"; }
+  function updateAiBox() {
+    var go = $("aiGo"); if (!go) return;
+    if (BACKEND !== "claude") { $("aiBox").hidden = true; return; }
+    if (ai.busy) { go.disabled = false; go.textContent = "Arrêter"; return; }
+    go.textContent = "Générer les déplacements";
+    var hasText = ($("edScript").value || "").trim().length >= 10;
+    go.disabled = !S.sample || !hasText;
+    if (!S.sample && !$("aiMsg").textContent) aiMsg("Le placement automatique fonctionne quand la page est ouverte depuis son lien Claude.", false);
+    $("aiUndo").hidden = !ed.undo;
+  }
+
+  function buildPrompt(c, text) {
+    var F = c.frames[0];
+    var rows = c.players.filter(function (p) { return F.pos[p.id]; }).map(function (p) {
+      var role = p.team === "A" ? (ROLE[p.label] || "attaquant") : (p.team === "D" ? "défenseur n°" + p.label : "gardien de but");
+      return "- " + p.id + " | " + p.label + " | " + role + " | départ [" + F.pos[p.id].join(", ") + "]";
+    }).join("\n");
+    return [
+      "Tu es un entraîneur de handball. Tu transformes la description d'une combinaison offensive en déplacements de pions sur un schéma.",
+      "",
+      "REPÈRE DU TERRAIN (demi-terrain vu de dessus, 10 unités = 1 mètre) :",
+      "- x de 0 (touche gauche, côté AG) à 200 (touche droite, côté AD) ; y de 0 (ligne de but, en haut) à 140 (vers le centre du terrain).",
+      "- But centré : poteaux en x=85 et x=115, y=0.",
+      "- Zone des 6 m : quarts de cercle de rayon 60 centrés sur chaque poteau, reliés par un segment y=60 entre x=85 et x=115. Aucun joueur de champ ne se place dans la zone (le pivot se place juste devant, y≈62-70 au centre).",
+      "- Ligne des 9 m : même forme avec un rayon de 90 (y≈90 au centre).",
+      "- Défenseurs numérotés de 1 à 6 de gauche à droite vus par l'attaque (le 1 fait face à l'AG, le 6 à l'AD).",
+      "",
+      "JOUEURS (id | étiquette | poste | position de départ [x, y]) :",
+      rows,
+      "Porteur du ballon au départ : " + F.ball,
+      "",
+      "DESCRIPTION DU COACH :",
+      "\"\"\"" + text + "\"\"\"",
+      "",
+      "CONSIGNES :",
+      "- Découpe l'action en étapes successives (2 à 8), dans l'ordre de la description. Une étape = un temps de jeu lisible : au plus une passe par étape.",
+      "- Pour chaque étape, donne la position à la FIN de l'étape de chaque joueur qui bouge (ne mets pas ceux qui restent sur place).",
+      "- Fais réagir les défenseurs de façon réaliste (sortir sur le porteur, glisser, suivre le joueur qui rentre), sauf si la description dit autre chose.",
+      "- Un croisé se joue derrière le porteur ; un bloc place le pivot au contact du défenseur visé, côté indiqué ; une rentrée d'ailier longe la ligne des 6 m.",
+      "- Les trajectoires qui frôleraient la zone des 6 m sont automatiquement courbées autour d'elle par l'application : donne simplement la position finale.",
+      "- Écarte les pions d'au moins 18 unités entre centres, sauf contact voulu (bloc, défenseur au contact du porteur). Courses de 50 unités maximum par étape.",
+      "- Dans une étape, les joueurs se déplacent d'abord, puis la passe (ou le tir) part de la position FINALE du passeur.",
+      "- ball = id de l'attaquant qui a le ballon à la fin de l'étape, ou \"GOAL\" pour un tir (dernière étape).",
+      "- text = phrase courte en français (moins de 110 caractères) qui décrit l'étape avec les étiquettes de poste (DC, ARG, PIV…).",
+      "",
+      "Réponds UNIQUEMENT avec un objet JSON de cette forme, sans texte autour :",
+      '{"name": "nom court proposé", "steps": [{"text": "...", "moves": {"a3": [70, 98]}, "ball": "a3"}], "remark": "facultatif : ce qui était ambigu"}'
+    ].join("\n");
+  }
+
+  function parseJson(t) {
+    if (t && typeof t === "object") return t;
+    t = String(t || ""); var a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if (a < 0 || b <= a) throw { code: "format" };
+    return JSON.parse(t.slice(a, b + 1));
+  }
+
+  function framesFrom(c, res) {
+    if (!res || !Array.isArray(res.steps) || !res.steps.length) throw { code: "format" };
+    var byId = {}, byLabel = {};
+    c.players.forEach(function (p) { byId[p.id] = p; byLabel[p.label.toUpperCase()] = p; });
+    function who(k) { k = String(k || ""); return byId[k] || byLabel[k.toUpperCase()] || null; }
+    var first = clone(c.frames[0]); first.text = "";
+    var frames = [first];
+    res.steps.slice(0, 12).forEach(function (st) {
+      var prev = frames[frames.length - 1];
+      var f = { pos: clone(prev.pos), ball: prev.ball, text: String(st && st.text || "").slice(0, 140) };
+      var mv = (st && st.moves) || {};
+      Object.keys(mv).forEach(function (k) {
+        var p = who(k), v = mv[k]; if (!p || !f.pos[p.id] || !Array.isArray(v)) return;
+        var x = Number(v[0]), y = Number(v[1]); if (!isFinite(x) || !isFinite(y)) return;
+        f.pos[p.id] = [Math.round(Math.max(-6, Math.min(206, x)) * 2) / 2, Math.round(Math.max(2, Math.min(140, y)) * 2) / 2];
+      });
+      if (prev.ball !== "GOAL") {
+        if (String(st && st.ball).toUpperCase() === "GOAL") f.ball = "GOAL";
+        else { var h = who(st && st.ball); if (h && h.team === "A") f.ball = h.id; }
+      }
+      frames.push(f);
+    });
+    return frames;
+  }
+
+  $("aiGo").onclick = async function () {
+    if (ai.busy) { if (ai.ctrl) ai.ctrl.abort(); return; }
+    var text = $("edScript").value.trim();
+    if (!S.sample || text.length < 10) return;
+    ai.busy = true; ai.ctrl = new AbortController(); updateAiBox();
+    aiMsg("Lecture de la description et placement des pions…", false);
+    var prompt = buildPrompt(ed.c, text), opts = { modelTier: "default", signal: ai.ctrl.signal };
+    try {
+      var out;
+      if (typeof S.sample.json === "function") out = await S.sample.json(prompt, opts);
+      else out = (await S.sample(prompt, opts)).text;
+      var res = parseJson(out);
+      var frames = framesFrom(ed.c, res);
+      snap(); ed.undo = { frames: ed.c.frames, k: ed.k };
+      ed.c.frames = frames; ed.c.script = text; ed.k = Math.min(1, frames.length - 1); ed.sel = null; ed.dirty = true;
+      if (!$("edName").value.trim() && res.name) { ed.c.name = String(res.name).slice(0, 60); $("edName").value = ed.c.name; }
+      var n = frames.length - 1;
+      aiMsg(plural(n, "étape") + " générée" + (n > 1 ? "s" : "") + ". Vérifiez chaque étape, ajustez les pions si besoin, puis prévisualisez." +
+        (res.remark ? " Remarque : " + String(res.remark).slice(0, 200) : ""), false);
+      renderEditor();
+    } catch (e) {
+      var code = e && e.code;
+      if (code === "not_granted") { S.sample = null; aiMsg("Le placement automatique n'est pas disponible pour votre compte.", true); }
+      else if (e && e.name === "AbortError" || code === "aborted") aiMsg("Génération arrêtée.", false);
+      else if (code === "rate_limited") aiMsg("Trop de demandes rapprochées. Réessayez dans une minute.", true);
+      else if (code === "format" || e instanceof SyntaxError) aiMsg("La description n'a pas pu être convertie. Précisez qui bouge, qui passe à qui et qui tire, puis réessayez.", true);
+      else aiMsg("La génération n'a pas abouti. Réessayez dans un instant.", true);
+    } finally { ai.busy = false; ai.ctrl = null; updateAiBox(); }
+  };
+  $("aiUndo").onclick = function () {
+    if (!ed.undo) return;
+    snap();
+    ed.c.frames = ed.undo.frames; ed.k = Math.min(ed.undo.k, ed.c.frames.length - 1); ed.undo = null; ed.sel = null;
+    aiMsg("Étapes précédentes rétablies.", false); updateAiBox(); renderEditor();
+  };
+
+  $("edPreview").onclick = function () {
+    var c = clone(ed.c); if (!c.name.trim()) c.name = "Sans nom";
+    openPlay(c, true);
+  };
+  $("edCancel").onclick = function () {
+    if (ed.dirty && !this.dataset.confirm) {
+      this.dataset.confirm = "1"; this.textContent = "← Quitter sans enregistrer ?";
+      var b = this; setTimeout(function () { delete b.dataset.confirm; b.textContent = "← Annuler"; }, 3500);
+      return;
+    }
+    delete this.dataset.confirm; this.textContent = "← Annuler";
+    show("vCoach");
+  };
+  $("edSave").onclick = async function () {
+    var c = ed.c, msg = $("edMsg");
+    c.name = $("edName").value.trim(); c.notes = $("edNotes").value.trim();
+    if (!c.name) { msg.textContent = "Donnez un nom à la combinaison."; msg.className = "note err"; $("edName").focus(); return; }
+    if (nSteps(c) === 0) { msg.textContent = "Ajoutez au moins une étape."; msg.className = "note err"; return; }
+    var btn = this; btn.disabled = true; msg.className = "note"; msg.textContent = "Enregistrement…";
+    try {
+      await saveCombo(clone(c));
+      ed.dirty = false; msg.textContent = "";
+      show("vCoach");
+    } catch (err) {
+      msg.textContent = writeError(err); msg.className = "note err";
+    } finally { btn.disabled = false; }
+  };
+
+  /* ---------- Transparence : commandes ---------- */
+  function renderDefT() {
+    Array.prototype.forEach.call(document.querySelectorAll(".defT"), function (box) {
+      box.innerHTML = DEF_STEPS.map(function (v) { return '<button type="button" data-t="' + v + '" class="' + (v === defT ? "on" : "") + '">' + v + " %</button>"; }).join("");
+    });
+  }
+  function setDefT(v) {
+    defT = v; try { localStorage.setItem("hb-def-t", String(v)); } catch (e) {}
+    renderDefT();
+    if (current === "vEdit" && ed.c) renderEditor();
+    if (vw.combo) drawPlay();
+    if (fs.on && fs.view === "play") buildPlayBar();
+  }
+  function cycleDefT() { setDefT(DEF_STEPS[(DEF_STEPS.indexOf(defT) + 1) % DEF_STEPS.length]); }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest(".defT button");
+    if (b) setDefT(parseInt(b.getAttribute("data-t"), 10));
+  });
+  renderDefT();
+
+  /* ---------- Plein écran paysage ---------- */
+  // Zone à toujours montrer : touches, but et attaque jusqu'à ~12,8 m.
+  var CORE = { x0: -4, x1: 204, y0: -13, y1: 128 };
+  function fitFsViewBox() {
+    if (!fs.on || !fs.svg) return;
+    var W = fs.rot ? window.innerHeight : window.innerWidth, H = fs.rot ? window.innerWidth : window.innerHeight;
+    var vertical = !fs.rot && H > W;
+    // Barre transparente : en paysage on réserve une partie de sa hauteur, en vertical toute sa hauteur (la place ne manque pas).
+    var barPx = ($("fsBar").offsetHeight || 48) * (vertical ? 1 : 0.6);
+    var cw = CORE.x1 - CORE.x0, ch = CORE.y1 - CORE.y0;
+    var m = barPx * ch / Math.max(1, H - barPx); ch += m;
+    var vx, vy, vw2, vh;
+    if (W / H > cw / ch) { vh = ch; vw2 = ch * W / H; vy = CORE.y0; vx = 100 - vw2 / 2; }
+    else { vw2 = cw; vh = cw * H / W; vx = CORE.x0; vy = CORE.y0 - (vh - ch) * 0.3; }
+    fs.svg.setAttribute("viewBox", [vx, vy, vw2, vh].map(function (n) { return n.toFixed(2); }).join(" "));
+  }
+  function enterFs(view) {
+    fs.on = true; fs.view = view;
+    var svg = view === "edit" ? editSvg : $("svgPlay");
+    fs.svg = svg; fs.home = svg.parentNode; fs.vb = svg.getAttribute("viewBox");
+    $("fsCourt").appendChild(svg);
+    $("fs").hidden = false; document.documentElement.style.overflow = "hidden";
+    layoutFs();
+    try {
+      var de = document.documentElement;
+      if (de.requestFullscreen) {
+        de.requestFullscreen({ navigationUI: "hide" })
+          .then(function () { if (screen.orientation && screen.orientation.lock) return screen.orientation.lock("landscape"); })
+          .catch(function () {})
+          .then(function () { setTimeout(layoutFs, 250); });
+      }
+    } catch (e) {}
+    if (view === "edit") renderEditor(); else { buildPlayBar(); drawPlay(); }
+    fitFsViewBox();
+  }
+  function exitFs() {
+    if (!fs.on) return;
+    fs.on = false;
+    fs.home.appendChild(fs.svg); fs.svg.setAttribute("viewBox", fs.vb);
+    var el = $("fs"); el.hidden = true; el.className = ""; el.removeAttribute("style");
+    $("fsBar").innerHTML = ""; document.documentElement.style.overflow = "";
+    try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {}); } catch (e) {}
+    ed.passMode = false;
+    if (fs.view === "edit" && ed.c) renderEditor(); else if (vw.combo) drawPlay();
+  }
+  // Téléphone tenu en portrait : on tourne la vue de 90° pour l'afficher en paysage.
+  function layoutFs() {
+    if (!fs.on) return;
+    var el = $("fs"), w = window.innerWidth, h = window.innerHeight, portrait = h > w;
+    var wasRot = fs.rot;
+    fs.rot = portrait && fs.orient === "paysage";
+    if (fs.rot) { el.className = "rot"; el.style.width = h + "px"; el.style.height = w + "px"; el.style.left = w + "px"; }
+    else { el.className = portrait ? "vert" : ""; el.removeAttribute("style"); }
+    if (wasRot !== fs.rot || el.dataset.portrait !== String(portrait)) { el.dataset.portrait = String(portrait); refreshFsBar(); }
+    fitFsViewBox();
+  }
+  window.addEventListener("resize", function () { if (fs.on) layoutFs(); });
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", function () { if (fs.on) layoutFs(); });
+  document.addEventListener("fullscreenchange", function () { if (fs.on) setTimeout(layoutFs, 150); });
+
+  function fsBtn(label, cls, onclick, id, disabled) {
+    var b = document.createElement("button"); b.type = "button"; b.textContent = label;
+    if (cls) b.className = cls; if (id) b.id = id; if (disabled) b.disabled = true;
+    b.onclick = onclick; return b;
+  }
+  function sep() { var d = document.createElement("span"); d.className = "sep"; return d; }
+  function defLabel() { return "Défense " + defT + " %"; }
+  function orientBtn() {
+    if (window.innerWidth >= window.innerHeight) return null; // l'écran est déjà en paysage
+    return fsBtn(fs.orient === "paysage" ? "⟳ Vertical" : "⟳ Paysage", "", function () {
+      fs.orient = fs.orient === "paysage" ? "vertical" : "paysage";
+      try { localStorage.setItem("hb-fs-orient", fs.orient); } catch (e) {}
+      layoutFs();
+    });
+  }
+  function refreshFsBar() { if (!fs.on) return; if (fs.view === "edit") renderFsBar(); else { buildPlayBar(); drawPlay(); } }
+
+  function renderFsBar() {
+    var bar = $("fsBar"); bar.innerHTML = "";
+    var c = ed.c, F = c.frames[ed.k];
+    bar.appendChild(fsBtn("↶", "", undoAction, null, !ed.hist.length));
+    bar.appendChild(fsBtn("↷", "", redoAction, null, !ed.fut.length));
+    bar.appendChild(sep());
+    c.frames.forEach(function (f, i) { bar.appendChild(fsBtn(i === 0 ? "Départ" : String(i), i === ed.k ? "on" : "", function () { goStep(i); })); });
+    bar.appendChild(fsBtn("＋", "", function () { addStep(); }));
+    bar.appendChild(sep());
+    bar.appendChild(fsBtn(ed.passMode ? "Touchez le receveur" : "Passe", "ball" + (ed.passMode ? " on" : ""), function () { ed.passMode = !ed.passMode; ed.sel = null; renderEditor(); }, null, !F.ball || F.ball === "GOAL"));
+    bar.appendChild(fsBtn(F.ball === "GOAL" ? "Tir ✓" : "Tir", "ball" + (F.ball === "GOAL" ? " on" : ""), function () { ed.passMode = false; doShoot(); }, null, !F.ball));
+    bar.appendChild(sep());
+    bar.appendChild(fsBtn(defLabel(), "", cycleDefT));
+    var m = document.createElement("span"); m.className = "lbl2"; m.id = "fsMsg";
+    m.textContent = ed.k === 0 ? "Position de départ" : "Étape " + ed.k + (F.text ? " · " + F.text : "");
+    bar.appendChild(m);
+    var ob = orientBtn(); if (ob) bar.appendChild(ob);
+    bar.appendChild(fsBtn("Terminé", "quit on", exitFs));
+  }
+  function buildPlayBar() {
+    var bar = $("fsBar"); bar.innerHTML = "";
+    bar.appendChild(fsBtn("⟲", "", function () { $("cRestart").click(); }));
+    bar.appendChild(fsBtn("‹", "", function () { $("cPrev").click(); }, "fsPrev"));
+    bar.appendChild(fsBtn("▶ Lecture", "on", function () { $("cPlay").click(); }, "fsPlayBtn"));
+    bar.appendChild(fsBtn("›", "", function () { $("cNext").click(); }, "fsNext"));
+    bar.appendChild(sep());
+    bar.appendChild(fsBtn(defLabel(), "", cycleDefT));
+    var m = document.createElement("span"); m.className = "lbl2"; m.id = "fsStep"; bar.appendChild(m);
+    var ob = orientBtn(); if (ob) bar.appendChild(ob);
+    bar.appendChild(fsBtn("Quitter", "quit", exitFs));
+  }
+  $("fsEdit").onclick = function () { enterFs("edit"); };
+  $("fsPlay").onclick = function () { enterFs("play"); };
+
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && fs.on) { exitFs(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && current === "vEdit" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) {
+      e.preventDefault(); if (e.shiftKey) redoAction(); else undoAction(); return;
+    }
+    if ((current !== "vPlay" && !(fs.on && fs.view === "play")) || /INPUT|TEXTAREA|SELECT|BUTTON/.test(document.activeElement.tagName)) return;
+    if (e.key === " ") { e.preventDefault(); $("cPlay").click(); }
+    else if (e.key === "ArrowRight") $("cNext").click();
+    else if (e.key === "ArrowLeft") $("cPrev").click();
+  });
+
+  renderAll();
+  initStore();
+})();
+</script>
+</body>
+</html>
