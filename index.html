@@ -41,6 +41,15 @@
   --bg: #12161d; --panel: #1b212b; --ink: #e8ebf0; --muted: #9aa3b2; --line: #2e3643;
   --accent: #6d9bff; --accent-ink: #0d1422; --danger: #ff7b6e; --soft: #1f2a40; color-scheme: dark;
 }
+/* Choix fait dans Paramètres : prioritaire sur le thème de l'appareil */
+html:root[data-hb-theme="light"] {
+  --bg: #fdf9ea; --panel: #fffdf6; --ink: #1b2330; --muted: #5f6676; --line: #e8dfc2;
+  --accent: #1d4ed8; --accent-ink: #ffffff; --danger: #b42318; --soft: #f5eecf; color-scheme: light;
+}
+html:root[data-hb-theme="dark"] {
+  --bg: #12161d; --panel: #1b212b; --ink: #e8ebf0; --muted: #9aa3b2; --line: #2e3643;
+  --accent: #6d9bff; --accent-ink: #0d1422; --danger: #ff7b6e; --soft: #1f2a40; color-scheme: dark;
+}
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
@@ -56,6 +65,17 @@ header.top { position: sticky; top: 0; z-index: 5; background: var(--panel); bor
 .brand h1 { font-size: 1.35rem; line-height: 1.1; }
 .brand-txt { display: grid; min-width: 0; }
 .club-line { font-size: .85rem; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; margin-left: auto; }
+.gear { border: 1px solid var(--line); background: var(--panel); color: var(--muted); width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.gear svg { display: block; transition: transform .3s; }
+.gear[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.gear[aria-pressed="true"] svg { transform: rotate(45deg); }
+.theme-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.theme-opt { border: 2px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.theme-opt.on { border-color: var(--accent); }
+.sw { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); flex: 0 0 auto; }
+.sw-light { background: linear-gradient(135deg, #fffdf6 50%, #fdf9ea 50%); }
+.sw-dark { background: linear-gradient(135deg, #1b212b 50%, #12161d 50%); }
 .tabs { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .tabs button { border: 0; background: transparent; padding: 6px 16px; border-radius: 999px; font-weight: 600; color: var(--muted); }
 .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
@@ -110,9 +130,11 @@ main { max-width: 760px; margin: 0 auto; padding: 16px; display: grid; gap: 16px
 .segs button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .controls { display: grid; grid-template-columns: 1fr 1fr 1.4fr 1fr; gap: 8px; }
 .controls .btn { justify-content: center; }
-.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: .9rem; }
+.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: .9rem; font-weight: 700; }
 .seg-speed { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .seg-speed button { border: 0; background: var(--panel); padding: 5px 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+#myPos, #profilePos { flex-wrap: wrap; max-width: 100%; }
+#myPos button, #profilePos button { padding: 5px 8px; }
 .seg-speed button.on { background: var(--accent); color: var(--accent-ink); }
 label.chk { display: inline-flex; gap: 6px; align-items: center; }
 
@@ -131,6 +153,7 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; }
 .sticky-actions { position: sticky; bottom: 0; background: var(--bg); padding: 10px 0; border-top: 1px solid var(--line); }
 .inline-confirm { display: inline-flex; gap: 6px; align-items: center; font-size: .9rem; }
 .tool { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn.flipBtn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.ball { border-color: #f97316; color: #c2410c; }
 .btn.ball.on { background: #f97316; color: #fff; }
 .btn.ball:disabled { border-color: var(--line); color: var(--muted); }
@@ -185,6 +208,7 @@ window.FIREBASE_CONFIG = {
     <marker id="mA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1d4ed8"/></marker>
     <marker id="mD" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#c8312b"/></marker>
     <marker id="mG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b07f00"/></marker>
+    <marker id="mV" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#7c3aed"/></marker>
     <marker id="mB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#f97316"/></marker>
   </defs>
 </svg>
@@ -195,10 +219,14 @@ window.FIREBASE_CONFIG = {
       <svg width="30" height="30" viewBox="-12 -12 24 24" aria-hidden="true"><defs><clipPath id="hbclip"><circle r="11"/></clipPath></defs><circle r="11" fill="#f5d33f"/><g clip-path="url(#hbclip)"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26" fill="#1e3a7b"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14" fill="#1e3a7b"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49" fill="#1e3a7b"/><polygon points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14 3.48,-12.36 -3.83,-12.36" fill="#1e3a7b"/><polygon points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39 -12.88,1.39 -12.88,-6.96" fill="#1e3a7b"/><polygon points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74 13.23,1.74 13.23,-6.96" fill="#1e3a7b"/><g fill="none" stroke="#111" stroke-width="0.55" stroke-linejoin="round"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49"/><polygon points="-2.52,-0.52 2.09,-0.52 3.48,3.74 -0.17,6.35 -3.92,3.66"/><polygon points="-4.87,-4.26 -2.52,-0.52 -3.92,3.66 -7.48,4.18 -9.75,0.70 -8.27,-3.57"/><polygon points="4.35,-4.18 8.01,-3.66 9.40,0.87 7.14,4.26 3.48,3.74 2.09,-0.52"/><polygon points="-4.53,-9.09 -2.52,-7.66 -4.87,-4.26 -8.27,-3.57 -8.44,-6.35"/><polygon points="2.18,-7.66 4.26,-9.14 8.18,-6.61 8.01,-3.66 4.35,-4.18"/><polyline points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14"/><polyline points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39"/><polyline points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74"/><polyline points="-3.31,10.01 -3.13,12.36"/><polyline points="3.39,10.27 3.66,12.36"/><polyline points="7.48,7.40 8.88,6.61"/><polyline points="-7.48,7.14 -8.88,6.53"/><polyline points="-7.48,4.18 -9.40,4.00"/><polyline points="7.14,4.26 9.40,4.00"/></g></g><circle r="11" fill="none" stroke="#111" stroke-width="1.1"/></svg>
       <div class="brand-txt"><h1>Combinaisons Handball</h1><div id="clubLine" class="club-line" hidden></div></div>
     </div>
+    <div class="nav">
     <div class="tabs" role="tablist" aria-label="Interface">
-      <button id="tabPlayer" role="tab" aria-selected="true">Joueur</button>
-      <button id="tabCoach" role="tab" aria-selected="false">Coach</button>
+        <button id="tabPlayer" role="tab" aria-selected="true">Joueur</button>
+        <button id="tabCoach" role="tab" aria-selected="false">Coach</button>
+      </div>
+      <button id="tabSettings" class="gear" type="button" aria-label="Paramètres" title="Paramètres" aria-pressed="false"><svg width="22" height="22" viewBox="-12 -12 24 24" aria-hidden="true"><path d="M-2.21 -8.31 L-1.86 -10.84 L1.86 -10.84 L2.21 -8.31 L4.31 -7.44 L6.35 -8.98 L8.98 -6.35 L7.44 -4.31 L8.31 -2.21 L10.84 -1.86 L10.84 1.86 L8.31 2.21 L7.44 4.31 L8.98 6.35 L6.35 8.98 L4.31 7.44 L2.21 8.31 L1.86 10.84 L-1.86 10.84 L-2.21 8.31 L-4.31 7.44 L-6.35 8.98 L-8.98 6.35 L-7.44 4.31 L-8.31 2.21 L-10.84 1.86 L-10.84 -1.86 L-8.31 -2.21 L-7.44 -4.31 L-8.98 -6.35 L-6.35 -8.98 L-4.31 -7.44Z M3.6 0 A3.6 3.6 0 1 0 -3.6 0 A3.6 3.6 0 1 0 3.6 0Z" fill="currentColor" fill-rule="evenodd"/></svg></button>
     </div>
+
   </div>
 </header>
 
@@ -226,6 +254,9 @@ window.FIREBASE_CONFIG = {
       <h2 id="playName" style="font-size:1.8rem"></h2>
       <p id="playNotes" class="note" style="margin:4px 0 0"></p>
     </div>
+    <div class="opts">
+      <span class="row" style="gap:6px">Mon poste <span class="seg-speed" id="myPos"></span> <span id="myPosNote" class="note" style="font-weight:500"></span></span>
+    </div>
     <div class="court"><svg id="svgPlay" viewBox="-12 -22 224 172" role="img" aria-label="Terrain de handball"></svg></div>
     <div id="caption" class="caption" aria-live="polite"></div>
     <div id="segs" class="segs"></div>
@@ -237,18 +268,42 @@ window.FIREBASE_CONFIG = {
     </div>
     <div class="opts">
       <span class="row" style="gap:6px">Vitesse
-        <span class="seg-speed" id="speed"><button data-s="0.5">0,5×</button><button data-s="1" class="on">1×</button><button data-s="1.6">1,5×</button></span>
+        <span class="seg-speed" id="speed"><button data-s="0.5" class="on">0,5×</button><button data-s="1">1×</button><button data-s="1.6">1,5×</button></span>
       </span>
       <span class="row" style="gap:6px">Transparence défense <span class="seg-speed defT"></span></span>
       <label class="chk"><input id="optPause" type="checkbox"> Pause à chaque étape</label>
       <label class="chk"><input id="optTrails" type="checkbox"> Afficher tout le parcours</label>
+      <button class="btn flipBtn" type="button" aria-pressed="false">⇅ Vue gardien</button>
     </div>
     <div class="legend">
       <span><i class="dot" style="background:var(--att)"></i>Attaquants</span>
       <span><i class="dot" style="background:var(--def)"></i>Défenseurs</span>
       <span><i class="dot" style="background:var(--gk)"></i>Gardien</span>
+      <span id="legMine" hidden><i class="dot" style="background:#7c3aed"></i>Mon poste</span>
       <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#1d4ed8" stroke-width="2"/></svg>Course</span>
       <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#f97316" stroke-width="2" stroke-dasharray="4 3"/></svg>Passe / tir</span>
+    </div>
+  </section>
+
+  <!-- PARAMÈTRES -->
+  <section id="vSettings" class="view" hidden>
+    <div class="row spread">
+      <h2 style="font-size:1.6rem">Paramètres</h2>
+      <button id="settingsBack" class="btn ghost" type="button">← Retour</button>
+    </div>
+    <div class="panel">
+      <h3>Profil</h3>
+      <div class="opts"><span class="row" style="gap:6px">Mon poste pour toutes les combinaisons</span></div>
+      <span class="seg-speed" id="profilePos" style="justify-self:start"></span>
+      <p id="profileMsg" class="note" style="margin:0">Votre pion apparaît en violet dans les combinaisons. Vous pouvez ensuite choisir un autre poste pour une combinaison précise.</p>
+    </div>
+    <div class="panel">
+      <h3>Apparence</h3>
+      <p class="note" style="margin:0">Choisissez le thème de l'application sur cet appareil.</p>
+      <div class="theme-pick" role="radiogroup" aria-label="Thème">
+        <button type="button" class="theme-opt" data-theme-opt="light" role="radio"><span class="sw sw-light"></span>Clair</button>
+        <button type="button" class="theme-opt" data-theme-opt="dark" role="radio"><span class="sw sw-dark"></span>Sombre</button>
+      </div>
     </div>
   </section>
 
@@ -310,13 +365,15 @@ window.FIREBASE_CONFIG = {
       <button id="redoBtn" class="btn" title="Refaire l'action annulée">↷ Avancer</button>
       <button id="passBtn" class="btn ball">Passe</button>
       <button id="shootBtn" class="btn ball">Tir au but</button>
-      <button id="fsEdit" class="btn" style="margin-left:auto">⛶ Plein écran</button>
+      <button class="btn flipBtn" type="button" aria-pressed="false" style="margin-left:auto">⇅ Vue gardien</button>
+      <button id="fsEdit" class="btn">⛶ Plein écran</button>
     </div>
     <div class="court"><svg id="svgEdit" viewBox="-12 -22 224 172" role="img" aria-label="Terrain de handball, éditeur"></svg></div>
     <div class="opts"><span class="row" style="gap:6px">Transparence de la défense <span class="seg-speed defT"></span></span></div>
     <p class="note" style="margin:0">Glissez un pion pour le déplacer à cette étape. <b>Passe :</b> glissez le ballon orange sur le receveur, ou touchez « Passe » puis le receveur. <b>Tir :</b> glissez le ballon dans le but. Une étape est créée automatiquement si besoin. En pointillé : la position à l'étape précédente.</p>
     <div class="panel">
       <div class="row spread"><h3 id="stepTitle">Départ</h3><button id="delStep" class="btn danger">Supprimer l'étape</button></div>
+      <p id="startHint" class="banner" style="margin:0">Départ = placement initial, sans flèche. Placez les joueurs et glissez le ballon vers le joueur qui commence. Pour un déplacement ou une passe fléchés, ajoutez une étape (＋ Étape) : les flèches partent de cette position de départ.</p>
       <div id="stepTextBox" class="field"><label for="stepText">Ce qui se passe à cette étape</label><input id="stepText" maxlength="140" placeholder="Ex. : Le DC engage, l'ARG croise dans son dos"></div>
       <div id="selBox" class="sel-box"></div>
       <div class="row">
@@ -452,11 +509,24 @@ if (typeof module !== "undefined") module.exports = HB;
     '<path d="M88 -11 V0 M91 -11 V0 M94 -11 V0 M97 -11 V0 M100 -11 V0 M103 -11 V0 M106 -11 V0 M109 -11 V0 M112 -11 V0 M85 -7.5 H115 M85 -4 H115" stroke="#9aa6b8" stroke-width=".5"/>',
     '<line x1="85" y1="0" x2="115" y2="0" stroke="#c8312b" stroke-width="2.4" stroke-dasharray="3 3"/></g>',
     '<g font-family="Barlow, sans-serif" font-size="6" fill="#26344d" opacity=".65">',
-    '<text x="178" y="56">6 m</text><text x="186" y="80">9 m</text><text x="108" y="72.5">7 m</text>',
-    '<text x="100" y="146" text-anchor="middle">Sens de l\'attaque ↑</text></g>'
+    '<text class="clbl" x="178" y="56">6 m</text><text class="clbl" x="186" y="80">9 m</text><text class="clbl" x="108" y="72.5">7 m</text>',
+    '<text class="clbl dir" x="100" y="142" text-anchor="middle">Sens de l\'attaque ↑</text></g>'
   ].join("");
 
-  function setupSvg(svg) { svg.innerHTML = COURT + '<g class="layer"></g>'; return svg.querySelector(".layer"); }
+  function setupSvg(svg) { svg.innerHTML = '<g class="flip">' + COURT + '<g class="layer"></g></g>'; return svg.querySelector(".layer"); }
+
+  // Vue gardien : rotation de 180° autour du centre du cadrage (x=100, y=64), les textes restent lisibles.
+  var FLIP_C = 128; // y retourné = 128 - y
+  var viewFlip = false;
+  try { viewFlip = localStorage.getItem("hb-flip") === "1"; } catch (e) {}
+  function applyFlip(svg) {
+    var g = svg.querySelector(".flip"); if (!g) return;
+    if (viewFlip) g.setAttribute("transform", "rotate(180 100 64)"); else g.removeAttribute("transform");
+    Array.prototype.forEach.call(svg.querySelectorAll("text.clbl"), function (t) {
+      if (viewFlip) t.setAttribute("transform", "rotate(180 " + t.getAttribute("x") + " " + t.getAttribute("y") + ")"); else t.removeAttribute("transform");
+      if (t.classList.contains("dir")) t.textContent = viewFlip ? "Vue du gardien · sens de l'attaque ↓" : "Sens de l'attaque ↑";
+    });
+  }
 
   function holderPos(c, k, h, posMap) {
     if (h === "GOAL") return goalTarget(c, k);
@@ -551,7 +621,7 @@ if (typeof module !== "undefined") module.exports = HB;
   }
 
   // Flèches de l'étape i → i+1 (courses + passe/tir)
-  function segmentArrows(c, i, op, onlyAtt) {
+  function segmentArrows(c, i, op, onlyAtt, mineId) {
     var A = c.frames[i], B = c.frames[i + 1]; if (!A || !B) return "";
     var out = "";
     c.players.forEach(function (p) {
@@ -560,8 +630,10 @@ if (typeof module !== "undefined") module.exports = HB;
       if (dist(a, b) <= 4) return;
       if (p.team === "D" && defOp() === 0) return;
       var col = p.team === "G" ? "#b07f00" : COLORS[p.team], o = { op: op * (p.team === "A" ? 1 : (p.team === "D" ? 0.8 * defOp() : 0.8)), w: p.team === "A" ? 2.2 : 1.6 };
+      var mk = MARK[p.team];
+      if (mineId && p.id === mineId) { col = "#7c3aed"; mk = "mV"; o.w = 2.8; }
       var tr = trajectory(a, b, p.team);
-      out += tr.curved ? curvedArrow(tr, col, MARK[p.team], o) : arrow(a, b, col, MARK[p.team], o);
+      out += tr.curved ? curvedArrow(tr, col, mk, o) : arrow(a, b, col, mk, o);
     });
     if (A.ball !== B.ball && A.ball !== "GOAL") {
       // La passe part de la position du passeur APRÈS son déplacement.
@@ -573,14 +645,14 @@ if (typeof module !== "undefined") module.exports = HB;
 
   function pawnSvg(p, xy, o) {
     o = o || {};
-    var fill = COLORS[p.team], txt = p.team === "G" ? "#1b2330" : "#fff";
+    var fill = o.mine ? "#7c3aed" : COLORS[p.team], txt = p.team === "G" ? "#1b2330" : "#fff";
     var fsz = p.label.length >= 3 ? 6.2 : (p.label.length === 2 ? 7 : 8.5);
     var op = p.team === "D" ? defOp() : 1;
     var s = '<g class="pawn" data-id="' + p.id + '" transform="translate(' + xy[0].toFixed(2) + ' ' + xy[1].toFixed(2) + ')"' + (op < 1 ? ' opacity="' + op + '"' : "") + (op === 0 ? ' pointer-events="none"' : "") + '>';
     if (o.hit) s += '<circle r="15" fill="transparent"/>';
     if (o.selected) s += '<circle r="13.5" fill="none" stroke="#111827" stroke-width="1.6" stroke-dasharray="3 2"/>';
     s += '<circle r="' + R + '" fill="' + fill + '" stroke="#fff" stroke-width="1.6"/>';
-    s += '<text text-anchor="middle" dy="0.35em" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="' + fsz + '" fill="' + txt + '" pointer-events="none">' + esc(p.label) + '</text></g>';
+    s += '<text' + (o.flip ? ' transform="rotate(180)"' : "") + ' text-anchor="middle" dy="0.35em" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="' + fsz + '" fill="' + txt + '" pointer-events="none">' + esc(p.label) + '</text></g>';
     return s;
   }
   // Ballon de handball (panneaux), dessiné dans un cercle de rayon 11.
@@ -804,10 +876,11 @@ if (typeof module !== "undefined") module.exports = HB;
   var current = "vList";
   function show(view) {
     if (fs.on) exitFs();
-    ["vList", "vPlay", "vCoach", "vEdit"].forEach(function (v) { $(v).hidden = v !== view; });
+    ["vList", "vPlay", "vCoach", "vEdit", "vSettings"].forEach(function (v) { $(v).hidden = v !== view; });
+    $("tabSettings").setAttribute("aria-pressed", String(view === "vSettings"));
     current = view;
     var coach = view === "vCoach" || view === "vEdit" || (view === "vPlay" && vw.preview);
-    $("tabPlayer").setAttribute("aria-selected", String(!coach));
+    $("tabPlayer").setAttribute("aria-selected", String(!coach && view !== "vSettings"));
     $("tabCoach").setAttribute("aria-selected", String(coach));
     if (view !== "vPlay") stopPlay();
     window.scrollTo(0, 0);
@@ -830,6 +903,38 @@ if (typeof module !== "undefined") module.exports = HB;
   }
   $("tabPlayer").onclick = function () { show("vList"); };
   $("tabCoach").onclick = function () { show("vCoach"); };
+  var beforeSettings = "vList";
+  $("tabSettings").onclick = function () {
+    if (current === "vSettings") { show(beforeSettings); return; }
+    beforeSettings = current === "vEdit" || current === "vPlay" ? current : current;
+    show("vSettings");
+  };
+  $("settingsBack").onclick = function () { show(beforeSettings); };
+
+  /* ---------- Thème Clair / Sombre ---------- */
+  var themePref = null;
+  try { themePref = localStorage.getItem("hb-theme"); } catch (e) {}
+  function effectiveTheme() {
+    if (themePref === "light" || themePref === "dark") return themePref;
+    var host = document.documentElement.getAttribute("data-theme");
+    if (host === "light" || host === "dark") return host;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  function applyTheme() {
+    var t = effectiveTheme();
+    // Sans choix enregistré, le thème clair utilise quand même la nouvelle teinte jaune pâle.
+    document.documentElement.setAttribute("data-hb-theme", t);
+    Array.prototype.forEach.call(document.querySelectorAll(".theme-opt"), function (b) {
+      var on = b.getAttribute("data-theme-opt") === t;
+      b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on));
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".theme-opt"), function (b) {
+    b.onclick = function () { themePref = b.getAttribute("data-theme-opt"); try { localStorage.setItem("hb-theme", themePref); } catch (e) {} applyTheme(); };
+  });
+  if (window.matchMedia) { try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {} }
+  try { new MutationObserver(function () { if (!themePref) applyTheme(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) {}
+  applyTheme();
 
   function metaChips(c) {
     var d = (HB.PRESETS[c.defense] || HB.PRESETS["0-6"]).label;
@@ -868,7 +973,7 @@ if (typeof module !== "undefined") module.exports = HB;
   }
 
   /* ---------- Lecture ---------- */
-  var vw = { combo: null, t: 0, playing: false, target: 0, hold: 0, speed: 1, last: 0, raf: 0, preview: false, stopAt: null };
+  var vw = { combo: null, t: 0, playing: false, target: 0, hold: 0, speed: 0.5, last: 0, raf: 0, preview: false, stopAt: null };
   var playLayer = setupSvg($("svgPlay"));
 
   function openPlay(c, preview, keepT) {
@@ -880,11 +985,53 @@ if (typeof module !== "undefined") module.exports = HB;
     $("playNotes").hidden = !c.notes;
     $("previewTag").hidden = !preview;
     $("playBack").textContent = preview ? "← Retour à l'éditeur" : "← Combinaisons";
-    buildSegs();
+    buildSegs(); buildMyPos();
     if (current !== "vPlay") show("vPlay");
     drawPlay();
   }
   $("playBack").onclick = function () { stopPlay(); if (vw.preview) show("vEdit"); else show("vList"); };
+
+  /* ---------- Mon poste : le pion du joueur passe en violet ---------- */
+  // Poste du profil (toutes les combinaisons) + choix propre à chaque combinaison.
+  var POSTES = ["AG", "ARG", "DC", "ARD", "AD", "PIV"];
+  var profilePos = "", comboPos = {};
+  try { profilePos = localStorage.getItem("hb-mypos") || ""; comboPos = JSON.parse(localStorage.getItem("hb-mypos-combo") || "{}") || {}; } catch (e) {}
+  function saveComboPos() { try { localStorage.setItem("hb-mypos-combo", JSON.stringify(comboPos)); } catch (e) {} }
+  function posFor(c) { return c && c.id && Object.prototype.hasOwnProperty.call(comboPos, c.id) ? comboPos[c.id] : profilePos; }
+  function myPosId(c) {
+    var l = posFor(c); if (!l) return null;
+    var p = c.players.find(function (x) { return x.team === "A" && x.label === l; });
+    return p ? p.id : null;
+  }
+  function posButtons(box, labels, current, onPick) {
+    box.innerHTML = "";
+    [""].concat(labels).forEach(function (l) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = l || "Aucun";
+      if (l === current || (!l && labels.indexOf(current) < 0)) b.className = "on";
+      b.onclick = function () { onPick(l); };
+      box.appendChild(b);
+    });
+  }
+  function buildMyPos() {
+    var c = vw.combo;
+    var labels = c.players.filter(function (p) { return p.team === "A"; }).map(function (p) { return p.label; });
+    posButtons($("myPos"), labels, posFor(c), function (l) {
+      if (c.id) { comboPos[c.id] = l; saveComboPos(); }
+      buildMyPos(); drawPlay();
+    });
+    var own = c.id && Object.prototype.hasOwnProperty.call(comboPos, c.id);
+    $("myPosNote").textContent = own ? "Choisi pour cette combinaison" : (profilePos ? "Poste du profil" : "");
+    $("legMine").hidden = !myPosId(c);
+  }
+  function buildProfilePos() {
+    posButtons($("profilePos"), POSTES, profilePos, function (l) {
+      profilePos = l; comboPos = {};
+      try { localStorage.setItem("hb-mypos", l); } catch (e) {}
+      saveComboPos(); buildProfilePos();
+      $("profileMsg").textContent = l ? "Votre poste " + l + " est appliqué à toutes les combinaisons." : "Aucun poste mis en évidence.";
+    });
+  }
+  buildProfilePos();
 
   function buildSegs() {
     var n = nSteps(vw.combo), box = $("segs"); box.innerHTML = "";
@@ -900,12 +1047,13 @@ if (typeof module !== "undefined") module.exports = HB;
 
   function drawPlay() {
     var c = vw.combo, n = nSteps(c), sc = sceneAt(c, vw.t), s = "";
-    if ($("optTrails").checked) for (var k = 0; k < n; k++) if (k !== sc.i) s += segmentArrows(c, k, 0.28);
+    var mineId = myPosId(c);
+    if ($("optTrails").checked) for (var k = 0; k < n; k++) if (k !== sc.i) s += segmentArrows(c, k, 0.28, false, mineId);
     if (n > 0) {
       var atEnd = vw.t >= n - 1e-6;
-      s += segmentArrows(c, sc.i, atEnd && !vw.playing ? 0.35 : 1);
+      s += segmentArrows(c, sc.i, atEnd && !vw.playing ? 0.35 : 1, false, mineId);
     }
-    c.players.forEach(function (p) { if (sc.pos[p.id]) s += pawnSvg(p, sc.pos[p.id]); });
+    c.players.forEach(function (p) { if (sc.pos[p.id]) s += pawnSvg(p, sc.pos[p.id], { flip: viewFlip, mine: p.id === mineId }); });
     s += ballSvg(sc.ball);
     playLayer.innerHTML = s;
 
@@ -1018,6 +1166,16 @@ if (typeof module !== "undefined") module.exports = HB;
   function undoAction() { if (!ed.hist.length) return; ed.fut.push(edState()); restore(ed.hist.pop()); edNote("Action annulée."); }
   function redoAction() { if (!ed.fut.length) return; ed.hist.push(edState()); restore(ed.fut.pop()); edNote("Action rétablie."); }
   var editSvg = $("svgEdit"), editLayer = setupSvg(editSvg);
+  function setFlip(v) {
+    viewFlip = v; try { localStorage.setItem("hb-flip", v ? "1" : "0"); } catch (e) {}
+    applyFlip(editSvg); applyFlip($("svgPlay"));
+    Array.prototype.forEach.call(document.querySelectorAll(".flipBtn"), function (b) { b.classList.toggle("on", viewFlip); b.setAttribute("aria-pressed", String(viewFlip)); });
+    if (fs.on) fitFsViewBox();
+    if (ed.c) renderEditor();
+    if (vw.combo) drawPlay();
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest(".flipBtn"); if (b) setFlip(!viewFlip); });
+  applyFlip(editSvg); applyFlip($("svgPlay"));
   function labelOf(id) { var p = ed.c.players.find(function (x) { return x.id === id; }); return p ? p.label : id; }
 
   function openEditor(c, isNew) {
@@ -1051,7 +1209,7 @@ if (typeof module !== "undefined") module.exports = HB;
     c.players.forEach(function (p) {
       if (!F.pos[p.id]) return;
       var hl = ed.sel === p.id || (target && target.id === p.id) || (ed.passMode && p.team === "A" && p.id !== F.ball);
-      s += pawnSvg(p, F.pos[p.id], { hit: true, selected: hl });
+      s += pawnSvg(p, F.pos[p.id], { hit: true, selected: hl, flip: viewFlip });
     });
     if (ed.ballDrag && ed.ballDrag.cur && bpos) {
       var to = target ? (target.goal ? [target.x, -5] : F.pos[target.id]) : ed.ballDrag.cur;
@@ -1076,6 +1234,7 @@ if (typeof module !== "undefined") module.exports = HB;
     $("presetBox").hidden = !(k === 0 && c.frames.length === 1);
     $("stepTitle").textContent = k === 0 ? "Position de départ" : "Étape " + k + " sur " + nSteps(c);
     $("delStep").hidden = k === 0;
+    $("startHint").hidden = k !== 0;
     $("stepTextBox").hidden = k === 0;
     if (document.activeElement !== $("stepText")) $("stepText").value = k > 0 ? (F.text || "") : "";
     $("shootBtn").disabled = !F.ball;
@@ -1171,7 +1330,8 @@ if (typeof module !== "undefined") module.exports = HB;
       // Vue tournée de 90° : conversion manuelle, fiable sur tous les navigateurs.
       var r = svg.getBoundingClientRect(), lx = e.clientY - r.top, ly = r.right - e.clientX;
       var W = r.height, H = r.width, vb = svg.viewBox.baseVal, sc = Math.min(W / vb.width, H / vb.height);
-      return { x: vb.x + (lx - (W - vb.width * sc) / 2) / sc, y: vb.y + (ly - (H - vb.height * sc) / 2) / sc };
+      var ux = vb.x + (lx - (W - vb.width * sc) / 2) / sc, uy = vb.y + (ly - (H - vb.height * sc) / 2) / sc;
+      return viewFlip ? { x: 200 - ux, y: FLIP_C - uy } : { x: ux, y: uy };
     }
     var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
     return pt.matrixTransform(layer.getScreenCTM().inverse());
@@ -1207,7 +1367,8 @@ if (typeof module !== "undefined") module.exports = HB;
     if (ed.ballDrag && e.pointerId === ed.ballDrag.pid) {
       var bd = ed.ballDrag; ed.ballDrag = null;
       var t = bd.cur && e.type === "pointerup" ? dropTarget(bd.cur) : null;
-      if (t && t.goal) doShoot(); else if (t) doPass(t.id); else { if (!bd.cur) { ed.passMode = true; edNote("Touchez le receveur de la passe."); } renderEditor(); }
+      if (t && !t.goal && ed.k === 0) { snap(); setBall(0, t.id); edNote("Le " + labelOf(t.id) + " a le ballon au départ."); }
+      else if (t && t.goal) doShoot(); else if (t) doPass(t.id); else { if (!bd.cur) { ed.passMode = true; edNote("Touchez le receveur de la passe."); } renderEditor(); }
       return;
     }
     var d = ed.drag; if (!d || e.pointerId !== d.pid) return;
@@ -1404,11 +1565,12 @@ if (typeof module !== "undefined") module.exports = HB;
     var vertical = !fs.rot && H > W;
     // Barre transparente : en paysage on réserve une partie de sa hauteur, en vertical toute sa hauteur (la place ne manque pas).
     var barPx = ($("fsBar").offsetHeight || 48) * (vertical ? 1 : 0.6);
-    var cw = CORE.x1 - CORE.x0, ch = CORE.y1 - CORE.y0;
+    var y0 = viewFlip ? FLIP_C - CORE.y1 : CORE.y0, y1 = viewFlip ? FLIP_C - CORE.y0 : CORE.y1;
+    var cw = CORE.x1 - CORE.x0, ch = y1 - y0;
     var m = barPx * ch / Math.max(1, H - barPx); ch += m;
     var vx, vy, vw2, vh;
-    if (W / H > cw / ch) { vh = ch; vw2 = ch * W / H; vy = CORE.y0; vx = 100 - vw2 / 2; }
-    else { vw2 = cw; vh = cw * H / W; vx = CORE.x0; vy = CORE.y0 - (vh - ch) * 0.3; }
+    if (W / H > cw / ch) { vh = ch; vw2 = ch * W / H; vy = y0; vx = 100 - vw2 / 2; }
+    else { vw2 = cw; vh = cw * H / W; vx = CORE.x0; vy = y0 - (vh - ch) * 0.3; }
     fs.svg.setAttribute("viewBox", [vx, vy, vw2, vh].map(function (n) { return n.toFixed(2); }).join(" "));
   }
   function enterFs(view) {
@@ -1486,8 +1648,9 @@ if (typeof module !== "undefined") module.exports = HB;
     bar.appendChild(fsBtn(F.ball === "GOAL" ? "Tir ✓" : "Tir", "ball" + (F.ball === "GOAL" ? " on" : ""), function () { ed.passMode = false; doShoot(); }, null, !F.ball));
     bar.appendChild(sep());
     bar.appendChild(fsBtn(defLabel(), "", cycleDefT));
+    bar.appendChild(fsBtn("⇅ Gardien", "flipBtn" + (viewFlip ? " on" : ""), function () {}));
     var m = document.createElement("span"); m.className = "lbl2"; m.id = "fsMsg";
-    m.textContent = ed.k === 0 ? "Position de départ" : "Étape " + ed.k + (F.text ? " · " + F.text : "");
+    m.textContent = ed.k === 0 ? "Départ : placez les joueurs, glissez le ballon vers le porteur" : "Étape " + ed.k + (F.text ? " · " + F.text : "");
     bar.appendChild(m);
     var ob = orientBtn(); if (ob) bar.appendChild(ob);
     bar.appendChild(fsBtn("Terminé", "quit on", exitFs));
@@ -1500,6 +1663,7 @@ if (typeof module !== "undefined") module.exports = HB;
     bar.appendChild(fsBtn("›", "", function () { $("cNext").click(); }, "fsNext"));
     bar.appendChild(sep());
     bar.appendChild(fsBtn(defLabel(), "", cycleDefT));
+    bar.appendChild(fsBtn("⇅ Gardien", "flipBtn" + (viewFlip ? " on" : ""), function () { setTimeout(buildPlayBar, 0); }));
     var m = document.createElement("span"); m.className = "lbl2"; m.id = "fsStep"; bar.appendChild(m);
     var ob = orientBtn(); if (ob) bar.appendChild(ob);
     bar.appendChild(fsBtn("Quitter", "quit", exitFs));
