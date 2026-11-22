@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Combinaisons Handball</title>
+<title>Combi'Hand</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
@@ -111,7 +111,10 @@ main { max-width: 760px; margin: 0 auto; padding: 16px; display: grid; gap: 16px
 /* Liste coach */
 .list { display: grid; gap: 8px; }
 .item { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.item .t { margin-right: auto; min-width: 0; }
+.item .t { margin-right: auto; min-width: 0; flex: 1 1 140px; }
+.grip { border: 0; background: transparent; color: var(--muted); padding: 8px 4px; cursor: grab; touch-action: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; display: inline-flex; }
+.item.dragging { position: relative; z-index: 5; box-shadow: 0 10px 28px rgba(0,0,0,.22); border-color: var(--accent); opacity: .96; }
+.item.dragging .grip { color: var(--accent); cursor: grabbing; }
 .item .t b { font-family: var(--display); font-size: 1.15rem; display: block; overflow-wrap: anywhere; }
 
 /* Terrain */
@@ -157,6 +160,11 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; }
 .btn.ball { border-color: #f97316; color: #c2410c; }
 .btn.ball.on { background: #f97316; color: #fff; }
 .btn.ball:disabled { border-color: var(--line); color: var(--muted); }
+.modal { position: fixed; inset: 0; z-index: 200; background: rgba(10,14,20,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal-card { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 18px; max-width: 420px; width: 100%; display: grid; gap: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.3); }
+.modal-card h3 { font-size: 1.3rem; }
+.modal-actions { display: grid; gap: 8px; }
+.modal-actions .btn { justify-content: center; }
 #fs { position: fixed; inset: 0; z-index: 100; background: #ddcba6; overflow: hidden; touch-action: none; overscroll-behavior: contain; color: #fff; }
 #fs.rot { inset: auto; top: 0; transform: rotate(90deg); transform-origin: top left; }
 #fs.vert .fs-bar { flex-wrap: wrap; justify-content: center; overflow-x: visible; touch-action: manipulation; padding-top: 18px;
@@ -217,7 +225,7 @@ window.FIREBASE_CONFIG = {
   <div class="top-in">
     <div class="brand">
       <svg width="30" height="30" viewBox="-12 -12 24 24" aria-hidden="true"><defs><clipPath id="hbclip"><circle r="11"/></clipPath></defs><circle r="11" fill="#f5d33f"/><g clip-path="url(#hbclip)"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26" fill="#1e3a7b"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14" fill="#1e3a7b"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49" fill="#1e3a7b"/><polygon points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14 3.48,-12.36 -3.83,-12.36" fill="#1e3a7b"/><polygon points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39 -12.88,1.39 -12.88,-6.96" fill="#1e3a7b"/><polygon points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74 13.23,1.74 13.23,-6.96" fill="#1e3a7b"/><g fill="none" stroke="#111" stroke-width="0.55" stroke-linejoin="round"><polygon points="-2.52,-7.66 2.18,-7.66 4.35,-4.18 2.09,-0.52 -2.52,-0.52 -4.87,-4.26"/><polygon points="-7.48,4.18 -3.92,3.66 -0.17,6.35 -0.09,9.49 -3.31,10.01 -7.48,7.14"/><polygon points="-0.17,6.35 3.48,3.74 7.14,4.26 7.48,7.40 3.39,10.27 -0.09,9.49"/><polygon points="-2.52,-0.52 2.09,-0.52 3.48,3.74 -0.17,6.35 -3.92,3.66"/><polygon points="-4.87,-4.26 -2.52,-0.52 -3.92,3.66 -7.48,4.18 -9.75,0.70 -8.27,-3.57"/><polygon points="4.35,-4.18 8.01,-3.66 9.40,0.87 7.14,4.26 3.48,3.74 2.09,-0.52"/><polygon points="-4.53,-9.09 -2.52,-7.66 -4.87,-4.26 -8.27,-3.57 -8.44,-6.35"/><polygon points="2.18,-7.66 4.26,-9.14 8.18,-6.61 8.01,-3.66 4.35,-4.18"/><polyline points="-4.53,-9.09 -2.52,-7.66 2.18,-7.66 4.26,-9.14"/><polyline points="-8.44,-6.35 -8.27,-3.57 -9.75,0.70 -10.79,1.39"/><polyline points="8.18,-6.61 8.01,-3.66 9.40,0.87 10.70,1.74"/><polyline points="-3.31,10.01 -3.13,12.36"/><polyline points="3.39,10.27 3.66,12.36"/><polyline points="7.48,7.40 8.88,6.61"/><polyline points="-7.48,7.14 -8.88,6.53"/><polyline points="-7.48,4.18 -9.40,4.00"/><polyline points="7.14,4.26 9.40,4.00"/></g></g><circle r="11" fill="none" stroke="#111" stroke-width="1.1"/></svg>
-      <div class="brand-txt"><h1>Combinaisons Handball</h1><div id="clubLine" class="club-line" hidden></div></div>
+      <div class="brand-txt"><h1>Combi'Hand</h1><div id="clubLine" class="club-line" hidden></div></div>
     </div>
     <div class="nav">
     <div class="tabs" role="tablist" aria-label="Interface">
@@ -320,7 +328,7 @@ window.FIREBASE_CONFIG = {
       <h2 style="font-size:1.6rem">Espace coach</h2>
       <button id="newBtn" class="btn primary">＋ Nouvelle combinaison</button>
     </div>
-    <p class="note" style="margin:0">Créez, modifiez et classez les combinaisons. Les joueurs les retrouvent dans l'onglet Joueur.</p>
+    <p class="note" style="margin:0">Créez, modifiez et classez les combinaisons. Pour changer l'ordre, <b>appuyez longuement sur ≡</b> puis glissez la combinaison : les joueurs les voient dans le même ordre.</p>
     <div id="loginBox" class="panel" hidden>
       <h3>Connexion coach</h3>
       <p class="note" style="margin:0">Seuls les coachs inscrits par le club peuvent créer et modifier les combinaisons. Les joueurs n'ont pas besoin de compte.</p>
@@ -387,6 +395,19 @@ window.FIREBASE_CONFIG = {
     </div>
   </section>
 </main>
+
+<div id="leaveBox" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
+  <div class="modal-card">
+    <h3 id="leaveTitle">Quitter sans enregistrer ?</h3>
+    <p class="note" style="margin:0">La combinaison « <span id="leaveName"></span> » a été modifiée. Si vous quittez maintenant, les modifications non enregistrées seront perdues.</p>
+    <div class="modal-actions">
+      <button id="leaveSave" class="btn primary" type="button">Enregistrer et quitter</button>
+      <button id="leaveDiscard" class="btn danger" type="button">Quitter sans enregistrer</button>
+      <button id="leaveStay" class="btn" type="button">Continuer la modification</button>
+    </div>
+    <p id="leaveMsg" class="note err" style="margin:0"></p>
+  </div>
+</div>
 
 <div id="fs" hidden>
   <div id="fsCourt" class="fs-court"></div>
@@ -707,7 +728,8 @@ if (typeof module !== "undefined") module.exports = HB;
   function normalize(id, d) {
     if (!d || !Array.isArray(d.frames) || !Array.isArray(d.players) || !d.frames.length) return null;
     return { id: id, name: String(d.name || "Sans nom").slice(0, 60), notes: String(d.notes || "").slice(0, 400),
-      defense: d.defense || "0-6", script: String(d.script || "").slice(0, 1500), players: d.players, frames: d.frames, updatedAt: d.updatedAt || 0 };
+      defense: d.defense || "0-6", script: String(d.script || "").slice(0, 1500), players: d.players, frames: d.frames, updatedAt: d.updatedAt || 0,
+      order: typeof d.order === "number" && isFinite(d.order) ? d.order : null };
   }
   /* ---------- Nom du club et catégorie ---------- */
   var CLUB_ID = "_club";
@@ -722,7 +744,7 @@ if (typeof module !== "undefined") module.exports = HB;
     var parts = [S.club.name, S.club.category].filter(Boolean);
     var line = $("clubLine");
     line.textContent = parts.join(" · "); line.hidden = !parts.length;
-    document.title = (S.club.name ? S.club.name + " · " : "") + "Combinaisons Handball";
+    document.title = (S.club.name ? S.club.name + " · " : "") + "Combi'Hand";
     if (document.activeElement !== $("clubName")) $("clubName").value = S.club.name;
     if (document.activeElement !== $("clubCat")) $("clubCat").value = S.club.category;
   }
@@ -740,7 +762,13 @@ if (typeof module !== "undefined") module.exports = HB;
   };
   [$("clubName"), $("clubCat")].forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); $("clubSave").click(); } }); });
 
-  function sortCombos() { S.combos.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { numeric: true, sensitivity: "base" }); }); }
+  // Ordre choisi par le coach, puis ordre alphabétique pour les combinaisons pas encore classées.
+  function sortCombos() {
+    S.combos.sort(function (a, b) {
+      var oa = a.order == null ? 1e9 : a.order, ob = b.order == null ? 1e9 : b.order;
+      return oa - ob || a.name.localeCompare(b.name, "fr", { numeric: true, sensitivity: "base" });
+    });
+  }
 
   var LS_KEY = "hb-combos-v1";
   function localLoad() {
@@ -850,7 +878,7 @@ if (typeof module !== "undefined") module.exports = HB;
   }
 
   async function saveCombo(c) {
-    var body = { name: c.name, notes: c.notes, script: c.script || "", defense: c.defense, players: c.players, frames: c.frames, updatedAt: Date.now() };
+    var body = { name: c.name, notes: c.notes, script: c.script || "", defense: c.defense, players: c.players, frames: c.frames, order: c.order == null ? null : c.order, updatedAt: Date.now() };
     if (S.mode === "local") {
       var i = S.combos.findIndex(function (x) { return x.id === c.id; });
       var n = normalize(c.id, body);
@@ -874,7 +902,22 @@ if (typeof module !== "undefined") module.exports = HB;
 
   /* ---------- Navigation ---------- */
   var current = "vList";
-  function show(view) {
+  // Évite de perdre une combinaison modifiée et non enregistrée.
+  var pendingView = null;
+  function guardLeave(view) {
+    if (!ed.active || !ed.dirty) return false;
+    if (view !== "vList" && view !== "vCoach") return false;
+    pendingView = view;
+    $("leaveName").textContent = ($("edName").value.trim() || "Sans nom");
+    $("leaveMsg").textContent = "";
+    $("leaveBox").hidden = false;
+    $("leaveStay").focus();
+    return true;
+  }
+  function closeLeave() { $("leaveBox").hidden = true; pendingView = null; }
+  function show(view, force) {
+    if (!force && guardLeave(view)) return;
+    if (view === "vList" || view === "vCoach") ed.active = false;
     if (fs.on) exitFs();
     ["vList", "vPlay", "vCoach", "vEdit", "vSettings"].forEach(function (v) { $(v).hidden = v !== view; });
     $("tabSettings").setAttribute("aria-pressed", String(view === "vSettings"));
@@ -895,11 +938,11 @@ if (typeof module !== "undefined") module.exports = HB;
       $("coachList").hidden = !logged;
       $("clubBox").hidden = !logged;
       $("accountTxt").textContent = logged ? "Connecté : " + (S.user.email || "") : "";
-      if (!logged && current === "vEdit") show("vCoach");
+      if (!logged && current === "vEdit") show("vCoach", true);
       return;
     }
     $("tabCoach").hidden = S.canWrite === false;
-    if (S.canWrite === false && (current === "vCoach" || current === "vEdit")) show("vList");
+    if (S.canWrite === false && (current === "vCoach" || current === "vEdit")) show("vList", true);
   }
   $("tabPlayer").onclick = function () { show("vList"); };
   $("tabCoach").onclick = function () { show("vCoach"); };
@@ -1122,11 +1165,12 @@ if (typeof module !== "undefined") module.exports = HB;
   var pendingDelete = null;
   function renderCoachList() {
     var box = $("coachList");
+    if (drag2 && drag2.active) { drag2.rerender = true; return; }
     if (!S.combos.length) { box.innerHTML = '<div class="empty">' + (S.mode === "loading" ? "Chargement…" : "Aucune combinaison. Créez la première avec « Nouvelle combinaison ».") + '</div>'; return; }
     box.innerHTML = "";
     S.combos.forEach(function (c) {
-      var it = document.createElement("div"); it.className = "item";
-      var t = '<div class="t"><b>' + esc(c.name) + '</b><div class="chips">' + metaChips(c) + '</div></div>';
+      var it = document.createElement("div"); it.className = "item"; it.setAttribute("data-id", c.id);
+      var t = '<button type="button" class="grip" aria-label="Appui long pour déplacer « ' + esc(c.name) + ' »" title="Appui long puis glisser"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button><div class="t"><b>' + esc(c.name) + '</b><div class="chips">' + metaChips(c) + '</div></div>';
       if (pendingDelete === c.id) {
         it.innerHTML = t + '<span class="inline-confirm">Supprimer définitivement ?<button class="btn danger" data-a="yes">Supprimer</button><button class="btn" data-a="no">Garder</button></span>';
       } else {
@@ -1137,7 +1181,7 @@ if (typeof module !== "undefined") module.exports = HB;
         var act = a.getAttribute("data-a");
         if (act === "view") openPlay(c, false);
         else if (act === "edit") openEditor(c);
-        else if (act === "dup") { var d = clone(c); d.id = uid(); d.name = (c.name + " (copie)").slice(0, 60); openEditor(d, true); }
+        else if (act === "dup") { var d = clone(c); d.id = uid(); d.name = (c.name + " (copie)").slice(0, 60); d.order = null; openEditor(d, true); }
         else if (act === "del") { pendingDelete = c.id; renderCoachList(); }
         else if (act === "no") { pendingDelete = null; renderCoachList(); }
         else if (act === "yes") {
@@ -1149,6 +1193,62 @@ if (typeof module !== "undefined") module.exports = HB;
       box.appendChild(it);
     });
   }
+  /* ---------- Classement : appui long sur ≡ puis glisser ---------- */
+  var drag2 = null;
+  $("coachList").addEventListener("pointerdown", function (e) {
+    var g = e.target.closest && e.target.closest(".grip"); if (!g) return;
+    e.preventDefault();
+    var item = g.closest(".item");
+    drag2 = { item: item, pid: e.pointerId, y0: e.clientY, active: false, rerender: false, grab: 0,
+      before: Array.prototype.map.call($("coachList").querySelectorAll(".item"), function (x) { return x.getAttribute("data-id"); }) };
+    try { g.setPointerCapture(e.pointerId); } catch (_) {}
+    drag2.timer = setTimeout(function () {
+      if (!drag2) return;
+      drag2.active = true;
+      drag2.grab = drag2.y0 - item.getBoundingClientRect().top;
+      item.classList.add("dragging");
+      try { if (navigator.vibrate) navigator.vibrate(15); } catch (_) {}
+    }, 350);
+  });
+  window.addEventListener("pointermove", function (e) {
+    if (!drag2 || e.pointerId !== drag2.pid) return;
+    if (!drag2.active) { if (Math.abs(e.clientY - drag2.y0) > 10) cancelDrag2(); return; }
+    var item = drag2.item, y = e.clientY;
+    item.style.transform = "";
+    var prev = item.previousElementSibling, next = item.nextElementSibling;
+    if (prev && prev.classList.contains("item")) { var pr = prev.getBoundingClientRect(); if (y - drag2.grab < pr.top + pr.height / 2) item.parentNode.insertBefore(item, prev); }
+    if (next && next.classList.contains("item")) { var nr = next.getBoundingClientRect(); if (y - drag2.grab + item.offsetHeight > nr.top + nr.height / 2) item.parentNode.insertBefore(next, item); }
+    var top = item.getBoundingClientRect().top;
+    item.style.transform = "translateY(" + (y - drag2.grab - top) + "px)";
+    if (y < 90) window.scrollBy(0, -10); else if (y > window.innerHeight - 70) window.scrollBy(0, 10);
+  });
+  function cancelDrag2() {
+    if (!drag2) return;
+    clearTimeout(drag2.timer);
+    drag2.item.classList.remove("dragging"); drag2.item.style.transform = "";
+    var rr = drag2.rerender; drag2 = null; if (rr) renderCoachList();
+  }
+  async function endDrag2(e) {
+    if (!drag2 || e.pointerId !== drag2.pid) return;
+    var wasActive = drag2.active, before = drag2.before;
+    cancelDrag2();
+    if (!wasActive) return;
+    var ids = Array.prototype.map.call($("coachList").querySelectorAll(".item"), function (x) { return x.getAttribute("data-id"); });
+    if (ids.join() === before.join()) return;
+    showBanner("Enregistrement de l'ordre…");
+    try {
+      for (var i = 0; i < ids.length; i++) {
+        var c = S.combos.find(function (x) { return x.id === ids[i]; });
+        if (c && c.order !== i) { var cc = clone(c); cc.order = i; c.order = i; await saveCombo(cc); }
+      }
+      sortCombos(); renderAll(); showBanner("Ordre enregistré.");
+      setTimeout(function () { if (banner.textContent === "Ordre enregistré.") showBanner(""); }, 2000);
+    } catch (err) { showBanner(esc(writeError(err))); }
+  }
+  window.addEventListener("pointerup", endDrag2);
+  window.addEventListener("pointercancel", function (e) { if (drag2 && e.pointerId === drag2.pid) cancelDrag2(); });
+  $("coachList").addEventListener("contextmenu", function (e) { if (e.target.closest && e.target.closest(".grip")) e.preventDefault(); });
+
   $("newBtn").onclick = function () { var c = HB.makeCombo("0-6"); c.id = uid(); openEditor(c, true); };
 
   /* ---------- Éditeur ---------- */
@@ -1179,7 +1279,7 @@ if (typeof module !== "undefined") module.exports = HB;
   function labelOf(id) { var p = ed.c.players.find(function (x) { return x.id === id; }); return p ? p.label : id; }
 
   function openEditor(c, isNew) {
-    ed.c = clone(c); ed.k = 0; ed.sel = null; ed.isNew = !!isNew; ed.dirty = false; ed.passMode = false; ed.ballDrag = null; ed.hist = []; ed.fut = [];
+    ed.c = clone(c); ed.k = 0; ed.sel = null; ed.isNew = !!isNew; ed.dirty = false; ed.active = true; ed.passMode = false; ed.ballDrag = null; ed.hist = []; ed.fut = [];
     $("edTitle").textContent = isNew ? "Nouvelle combinaison" : "Modifier la combinaison";
     $("edName").value = ed.c.name || ""; $("edNotes").value = ed.c.notes || "";
     $("edPreset").value = ed.c.defense || "0-6";
@@ -1512,29 +1612,35 @@ if (typeof module !== "undefined") module.exports = HB;
     var c = clone(ed.c); if (!c.name.trim()) c.name = "Sans nom";
     openPlay(c, true);
   };
-  $("edCancel").onclick = function () {
-    if (ed.dirty && !this.dataset.confirm) {
-      this.dataset.confirm = "1"; this.textContent = "← Quitter sans enregistrer ?";
-      var b = this; setTimeout(function () { delete b.dataset.confirm; b.textContent = "← Annuler"; }, 3500);
-      return;
-    }
-    delete this.dataset.confirm; this.textContent = "← Annuler";
-    show("vCoach");
-  };
-  $("edSave").onclick = async function () {
-    var c = ed.c, msg = $("edMsg");
+  $("edCancel").onclick = function () { show("vCoach"); };
+
+  // Enregistre la combinaison en cours ; renvoie un message d'erreur, ou "" si tout va bien.
+  async function saveCurrent() {
+    var c = ed.c;
     c.name = $("edName").value.trim(); c.notes = $("edNotes").value.trim();
-    if (!c.name) { msg.textContent = "Donnez un nom à la combinaison."; msg.className = "note err"; $("edName").focus(); return; }
-    if (nSteps(c) === 0) { msg.textContent = "Ajoutez au moins une étape."; msg.className = "note err"; return; }
-    var btn = this; btn.disabled = true; msg.className = "note"; msg.textContent = "Enregistrement…";
-    try {
-      await saveCombo(clone(c));
-      ed.dirty = false; msg.textContent = "";
-      show("vCoach");
-    } catch (err) {
-      msg.textContent = writeError(err); msg.className = "note err";
-    } finally { btn.disabled = false; }
+    if (!c.name) return "Donnez un nom à la combinaison.";
+    if (nSteps(c) === 0) return "Ajoutez au moins une étape.";
+    try { await saveCombo(clone(c)); ed.dirty = false; return ""; }
+    catch (err) { return writeError(err); }
+  }
+  $("edSave").onclick = async function () {
+    var msg = $("edMsg"), btn = this; btn.disabled = true; msg.className = "note"; msg.textContent = "Enregistrement…";
+    var err = await saveCurrent(); btn.disabled = false;
+    if (err) { msg.textContent = err; msg.className = "note err"; if (!$("edName").value.trim()) $("edName").focus(); return; }
+    msg.textContent = ""; show("vCoach");
   };
+  $("leaveStay").onclick = closeLeave;
+  $("leaveDiscard").onclick = function () { var v = pendingView || "vCoach"; ed.dirty = false; closeLeave(); show(v, true); };
+  $("leaveSave").onclick = async function () {
+    var v = pendingView || "vCoach", b = this; b.disabled = true; $("leaveMsg").textContent = "";
+    var err = await saveCurrent(); b.disabled = false;
+    if (err) { $("leaveMsg").textContent = err + " Choisissez « Continuer la modification » pour corriger."; return; }
+    closeLeave(); show(v, true);
+  };
+  $("leaveBox").addEventListener("click", function (e) { if (e.target === this) closeLeave(); });
+  window.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("leaveBox").hidden) closeLeave(); });
+  // Fermeture ou rechargement de la page avec des modifications en cours
+  window.addEventListener("beforeunload", function (e) { if (ed.active && ed.dirty) { e.preventDefault(); e.returnValue = ""; } });
 
   /* ---------- Transparence : commandes ---------- */
   function renderDefT() {
